@@ -12,17 +12,15 @@ import MainContent from '@/components/page/MainContent';
 import Hero from '@/components/page/Hero';
 import ShaderBackground from '@/components/ui/shader-background';
 import Loader from '@/components/ui/StartingLoader';
-// Register plugins
+
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger, useGSAP);
 }
 
-// Preload models
 useGLTF.preload('/blackhole_compress.glb');
 useGLTF.preload('/spacedrive_fab_compress.glb');
 
 export default function GlassBreakPage() {
-  // Core Refs
   const containerRef = useRef(null);
   const contentRef = useRef(null);
   const fragmentsRef = useRef([]);
@@ -30,19 +28,14 @@ export default function GlassBreakPage() {
   const audioRef = useRef(null);
   const blackHoleCanvasRef = useRef(null);
   const mainScrollTrigger = useRef(null);
-  // !
-  // Add these new states after your existing state declarations
 const [blackHoleCompleted, setBlackHoleCompleted] = useState(false);
 const [autoTransitionTriggered, setAutoTransitionTriggered] = useState(false);
 const [soundPlayed, setSoundPlayed] = useState(false);
-  // !
-  
-  // System States
+
   const [isHydrated, setIsHydrated] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
   const [audioLoaded, setAudioLoaded] = useState(false);
   
-  // Scene States
   const [sceneState, setSceneState] = useState({
     current: 'glass',
     transitioning: false,
@@ -50,17 +43,14 @@ const [soundPlayed, setSoundPlayed] = useState(false);
     gpuWarmedUp: false
   });
   
-  // Animation States
   const [heroMounted, setHeroMounted] = useState(true);
   const [contentFragments, setContentFragments] = useState([]);
-  const [fragmentsGenerated, setFragmentsGenerated] = useState(false); // ✅ NEW: Track if fragments are ready
+  const [fragmentsGenerated, setFragmentsGenerated] = useState(false);
   const [showBlackHole, setShowBlackHole] = useState(false);
   const [startBlackHoleAutoScale, setStartBlackHoleAutoScale] = useState(false);
   const [showSpacedrive, setShowSpacedrive] = useState(false);
   const [showMainContent, setShowMainContent] = useState(false);
   const [isMainContentActive, setIsMainContentActive] = useState(false);
-
-  // User Interaction Tracking
   useEffect(() => {
     const handleUserInteraction = () => {
       setUserInteracted(true);
@@ -82,27 +72,22 @@ const [soundPlayed, setSoundPlayed] = useState(false);
     };
   }, []);
 
-    // !
-    // ✅ MODIFY: Update your emergency cleanup useEffect
 useEffect(() => {
   return () => {
     if (!isMainContentActive) {
       console.log('🚨 Emergency cleanup on abnormal unmount');
       deleteAllFragments();
       setHeroMounted(false);
-      setBlackHoleCompleted(false);        // ✅ Reset new state
-      setAutoTransitionTriggered(false);   // ✅ Reset new state
+      setBlackHoleCompleted(false); 
+      setAutoTransitionTriggered(false); 
     }
   };
 }, []);
 
-    // !
-  // Component Initialization
   useEffect(() => {
     setIsHydrated(true);
   }, []);
 
-  // GPU Warmup
   useEffect(() => {
     if (!isHydrated) return;
 
@@ -156,7 +141,6 @@ useEffect(() => {
     return () => clearTimeout(warmupTimeout);
   }, [isHydrated]);
 
-  // Audio Setup
   useEffect(() => {
     if (!isHydrated) return;
 
@@ -177,7 +161,6 @@ useEffect(() => {
     };
   }, [isHydrated]);
 
-  // Fragment Deletion Function
   const deleteAllFragments = useCallback(() => {
     console.log('🗑️ Deleting all fragments from DOM and memory...');
     
@@ -191,12 +174,10 @@ useEffect(() => {
     
     fragmentsRef.current = [];
     setContentFragments([]);
-    setFragmentsGenerated(false); // ✅ Reset generated flag
+    setFragmentsGenerated(false); 
     
     console.log('✅ All fragments deleted from memory and DOM');
   }, []);
-
-  // ✅ MEMOIZED: Crack Lines (prevent recreation)
   const crackLines = useMemo(() => [
     { start: [50, 50], end: [0, 0], angle: -135 },
     { start: [50, 50], end: [100, 0], angle: -45 },
@@ -212,11 +193,8 @@ useEffect(() => {
     { start: [25, 75], end: [0, 90], angle: 155 },
   ], []);
 
-  // ✅ STABLE: Fragment Generation (only run once)
   useEffect(() => {
     if (!isHydrated || !heroMounted || showSpacedrive || showMainContent || fragmentsGenerated) return;
-
-    console.log('🎯 Generating fragments (one time only)...');
 
     const generateContentFragments = () => {
       const centerX = window.innerWidth / 2 -5;
@@ -274,47 +252,31 @@ useEffect(() => {
       });
 
       setContentFragments(fragments);
-      setFragmentsGenerated(true); // ✅ Mark as generated to prevent re-runs
-      console.log(`✅ Generated ${fragments.length} fragments (FINAL)`);
+      setFragmentsGenerated(true);
     };
 
     generateContentFragments();
-
-    // ✅ REMOVED: Resize listener to prevent regeneration
     
   }, [isHydrated, heroMounted, showSpacedrive, showMainContent, fragmentsGenerated, crackLines]);
 
-  // ✅ OPTIMIZED: Main GSAP Animation with reduced dependencies
   useGSAP(() => {
-    // Basic requirements
     if (!isHydrated) {
-      console.log('⏳ Waiting for hydration...');
       return;
     }
     
     if (isMainContentActive) {
-      console.log('🚫 MainContent active - skipping scroll logic');
       return;
     }
-    
-    // Check refs directly
     if (!containerRef.current || !contentRef.current || !crackOverlayRef.current) {
-      console.log('⏳ DOM refs not ready yet, retrying...');
       return;
     }
-    
-    // ✅ CHANGED: Use fragmentsGenerated flag instead of contentFragments.length
     if (!fragmentsGenerated) {
-      console.log('⏳ Waiting for fragments to be generated...');
       return;
     }
     
     if (!sceneState.modelsLoaded || !heroMounted) {
-      console.log('⏳ Waiting for models/hero...');
       return;
     }
-
-    console.log('🎬 All requirements met - starting GSAP animation setup...');
 
     let previousProgress = 0;
     let soundPlayed = false;
@@ -328,7 +290,6 @@ useEffect(() => {
         pin: true,
         anticipatePin: 1,
         refreshPriority: -1,
-        // ✅ MODIFY: In your useGSAP hook's masterTimeline scrollTrigger onUpdate
 onUpdate: (self) => {
   const currentProgress = self.progress;
   const isScrollingDown = currentProgress > previousProgress;
@@ -336,8 +297,6 @@ onUpdate: (self) => {
   if (showMainContent && currentProgress < 0.95) {
     return;
   }
-  
-  // Audio trigger with user interaction check (unchanged)
   if (isScrollingDown && 
       currentProgress >= 0.26 && 
       currentProgress <= 0.28 && 
@@ -347,7 +306,6 @@ onUpdate: (self) => {
     setSoundPlayed(true);
   }
   
-  // Black hole becomes visible at 30% (unchanged)
   if (currentProgress >= 0.3 && !showBlackHole) {
     setShowBlackHole(true);
     setSceneState(prev => ({ ...prev, current: 'blackhole' }));
@@ -356,17 +314,12 @@ onUpdate: (self) => {
       gsap.set(blackHoleCanvasRef.current, { opacity: 1 });
     }
   }
-
-  // Start black hole auto-scaling at 70% (unchanged)
   if (currentProgress >= 0.7 && !startBlackHoleAutoScale) {
     setStartBlackHoleAutoScale(true);
   }
 
-  // ✅ MODIFIED: Spacedrive trigger - respect auto-transition
   if (!showSpacedrive && !autoTransitionTriggered) {
-    // Only trigger via scroll if auto-transition hasn't happened
     if (currentProgress >= 0.88) {
-      console.log('🚀 Spacedrive beginning via scroll - cleaning up fragments and Hero...');
       
       deleteAllFragments();
       setHeroMounted(false);
@@ -375,15 +328,13 @@ onUpdate: (self) => {
       setSceneState(prev => ({ ...prev, current: 'spacedrive', transitioning: true }));
     }
   }
-
-  // ✅ MODIFIED: Reset flags on scroll up - include new states
   if (currentProgress < 0.1 && !showMainContent) {
     setSoundPlayed(false);
     setShowBlackHole(false);
     setStartBlackHoleAutoScale(false);
     setShowSpacedrive(false);
-    setBlackHoleCompleted(false);        // Reset new state
-    setAutoTransitionTriggered(false);   // Reset new state
+    setBlackHoleCompleted(false); 
+    setAutoTransitionTriggered(false); 
     setSceneState(prev => ({ ...prev, current: 'glass', transitioning: false }));
   }
   
@@ -395,7 +346,6 @@ onUpdate: (self) => {
 
     mainScrollTrigger.current = masterTimeline.scrollTrigger;
     
-    // Phase 1: Show cracks (0-20%)
     masterTimeline
       .to(crackOverlayRef.current, {
         opacity: 1,
@@ -409,7 +359,6 @@ onUpdate: (self) => {
         ease: "power2.inOut"
       }, 0.1);
 
-    // Phase 2: Glass shattering (20-25%)
     masterTimeline
       .to(crackOverlayRef.current, {
         opacity: 0,
@@ -424,7 +373,6 @@ onUpdate: (self) => {
         ease: "power3.inOut"
       }, 0.2);
 
-    // Phase 3: Fragments appear and animate
     const fragmentsByLine = {};
     contentFragments.forEach(fragment => {
       if (!fragmentsByLine[fragment.crackIndex]) {
@@ -466,7 +414,6 @@ onUpdate: (self) => {
       });
     });
 
-    // Phase 4: Fragments move to center
     contentFragments.forEach((fragmentData) => {
       const fragmentElement = fragmentsRef.current[fragmentData.id];
       if (!fragmentElement) return;
@@ -483,7 +430,6 @@ onUpdate: (self) => {
       }, moveStartTime);
     });
 
-    // Phase 5: Fragments fade out
     const existingFragments = fragmentsRef.current.filter(el => el !== null && el !== undefined);
     
     if (existingFragments.length > 0) {
@@ -499,7 +445,6 @@ onUpdate: (self) => {
       }, 0.6);
     }
 
-    // Black hole canvas visibility
     if (blackHoleCanvasRef.current) {
       masterTimeline.to(blackHoleCanvasRef.current, {
         opacity: 1,
@@ -508,7 +453,6 @@ onUpdate: (self) => {
       }, 0.3);
     }
 
-    console.log('✅ GSAP animation setup complete');
 
     return () => {
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
@@ -525,13 +469,11 @@ onUpdate: (self) => {
       heroMounted, 
       userInteracted,
       isMainContentActive,
-      blackHoleCompleted,      // ✅ NEW dependency
-      autoTransitionTriggered  // ✅ NEW dependency
+      blackHoleCompleted,
+      autoTransitionTriggered
     ],
     revertOnUpdate: true
   });
-
-  // ScrollTrigger Management
   useEffect(() => {
     if (showMainContent && mainScrollTrigger.current) {
       mainScrollTrigger.current.kill();
@@ -547,22 +489,17 @@ onUpdate: (self) => {
       });
     }
   }, [showMainContent]);
-
-  // Emergency Cleanup
   useEffect(() => {
     return () => {
       if (!isMainContentActive) {
-        console.log('🚨 Emergency cleanup on abnormal unmount');
         deleteAllFragments();
         setHeroMounted(false);
       }
     };
   }, []);
 
-  // Audio Function
   const playGlassBreakSound = () => {
     if (!audioRef.current || !audioLoaded || !userInteracted) {
-      console.warn('⚠️ Audio not ready or user hasn\'t interacted yet');
       return;
     }
 
@@ -571,24 +508,19 @@ onUpdate: (self) => {
       
       const playPromise = audioRef.current.play();
       
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            console.log('🔊 Glass break sound played successfully');
-          })
-          .catch(error => {
-            console.warn('⚠️ Audio play failed:', error.name, error.message);
-          });
-      }
+      // if (playPromise !== undefined) {
+      //   playPromise
+      //     .then(() => {
+      //     })
+      //     .catch(error => {
+      //     });
+      // }
     } catch (error) {
-      console.warn('⚠️ Audio playback error:', error);
+      console.warn('Audio error:', error);
     }
   };
 
-  // Event Handlers
   const handleSpacedriveComplete = () => {
-    console.log('🎭 Spacedrive complete - transitioning to MainContent...');
-    
     if (blackHoleCanvasRef.current) {
       blackHoleCanvasRef.current.style.display = 'none';
     }
@@ -605,31 +537,17 @@ onUpdate: (self) => {
     }, 100);
   };
 
-  // !
-  // ✅ REPLACE: Your existing handleBlackHoleEngulf function with this
 const handleBlackHoleEngulf = () => {
-  console.log('🌌 Black hole has completely engulfed the screen!');
-  
-  // Mark blackhole as completed
   setBlackHoleCompleted(true);
-  
-  // Prevent multiple triggers
   if (autoTransitionTriggered) {
-    console.log('⚠️ Auto-transition already triggered, skipping...');
     return;
   }
   
   setAutoTransitionTriggered(true);
-  
-  // Auto-transition to spacedrive with smooth timing
   setTimeout(() => {
-    console.log('🚀 Auto-triggering Spacedrive after BlackHole completion');
-    
-    // Clean up fragments and hero
     deleteAllFragments();
     setHeroMounted(false);
     
-    // Show spacedrive immediately
     setShowSpacedrive(true);
     setSceneState(prev => ({ 
       ...prev, 
@@ -637,12 +555,8 @@ const handleBlackHoleEngulf = () => {
       transitioning: true 
     }));
     
-    console.log('✅ Auto-transition to Spacedrive completed');
-    
-  }, 200); // 400ms delay for smooth visual transition
+  }, 100);
 };
-
-  // !
 
   const generateRealisticGlassShape = (crackAngle) => {
     const points = [];
@@ -661,7 +575,6 @@ const handleBlackHoleEngulf = () => {
     return `polygon(${points.join(', ')})`;
   };
 
-  // Loading State
   if (!isHydrated || !sceneState.gpuWarmedUp) {
     return (
       <div className="min-h-screen flex items-center justify-center ">
@@ -676,7 +589,6 @@ const handleBlackHoleEngulf = () => {
         ref={containerRef}
         className="relative h-screen overflow-hidden"
       >
-         {/* <ShaderBackground backdropBlurAmount="xl" color="#010974" className="shadow-lg" /> */}
          <ShaderBackground 
   gradient="radial-gradient(circle, #2d1b69, #000000)"
   color="rgb(255, 250, 194)"
@@ -684,7 +596,6 @@ const handleBlackHoleEngulf = () => {
   particleSize={0.2}
   rotationSpeed={0.0005}
 />
-        {/* Hero Component */}
         {heroMounted && sceneState.current === 'glass' && !showMainContent && (
           <div className="absolute inset-0 flex items-center justify-center z-10">
             <div ref={contentRef}>
@@ -693,13 +604,10 @@ const handleBlackHoleEngulf = () => {
           </div>
         )}
 
-        {/* Glass Crack Overlay */}
         {heroMounted && !showMainContent && (
           <EnhancedGlassCrackOverlay ref={crackOverlayRef} />
         )}
 
-        {/* Glass Fragments */}
-        {/* Glass Fragments - FIXED IMAGE POSITIONING */}
 {heroMounted && !showMainContent && contentFragments.length > 0 && (
   <div className="absolute inset-0 pointer-events-none z-20 fragment-container">
     {contentFragments.map((fragment) => (
@@ -727,19 +635,16 @@ const handleBlackHoleEngulf = () => {
             background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.15) 100%)',
           }}
         >
-          {/* ✅ FIXED: Proper image positioning */}
           <div
             className="absolute inset-0"
             style={{
               backgroundImage: 'url(/crack.png)',
-              backgroundSize: '100vw 100vh', // Cover full viewport
-              backgroundPosition: fragment.backgroundPosition, // Use original positioning
+              backgroundSize: '100vw 100vh',
+              backgroundPosition: fragment.backgroundPosition, 
               backgroundRepeat: 'no-repeat',
               transform: 'scale(0.95)',
             }}
           />
-          
-          {/* Glass reflection overlays */}
           <div 
             className="absolute inset-0 opacity-50 pointer-events-none"
             style={{
@@ -758,16 +663,12 @@ const handleBlackHoleEngulf = () => {
     ))}
   </div>
 )}
-
-
-        {/* 3D Canvas */}
         {(showBlackHole || showSpacedrive) && !showMainContent && (
           <div 
             ref={blackHoleCanvasRef}
             className="absolute inset-0 z-50"
             id="three-canvas-container"
           >
-            {/* //!try chaning this value so that blackhole model is at center */}
             <Canvas
               camera={{ 
                 position: [0, 0, 5],
@@ -818,7 +719,6 @@ const handleBlackHoleEngulf = () => {
           </div>
         )}
 
-        {/* MainContent */}
         {showMainContent && (
           <div className="fixed inset-0 w-full min-h-screen bg-black z-50">
             <MainContent />
