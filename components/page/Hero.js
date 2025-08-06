@@ -13,7 +13,6 @@ function RobotModel({ ...props }) {
   const { actions, names } = useAnimations(gltf.animations, group)
   const [isPlaying, setIsPlaying] = useState(false)
 
-  // Function to play animation
   const playAnimation = () => {
     if (names.length > 0) {
       names.forEach((name) => {
@@ -25,14 +24,12 @@ function RobotModel({ ...props }) {
             .setLoop(2201, 1)
             .fadeIn(0.5)
           
-          // Set the animation to start at 2 seconds
           action.time = 2
           action.play()
           setIsPlaying(true)
           
-          // Stop animation at 80% to prevent model disappearing
           const duration = action.getClip().duration
-          const stopTime = (duration - 2) * 0.8 // 80% of remaining duration after 2 sec start
+          const stopTime = (duration - 2) * 0.8
           
           setTimeout(() => {
             action.paused = true
@@ -44,7 +41,6 @@ function RobotModel({ ...props }) {
     }
   }
 
-  // Handle click event
   const handleClick = (event) => {
     event.stopPropagation()
     if (!isPlaying) {
@@ -52,22 +48,16 @@ function RobotModel({ ...props }) {
     }
   }
 
-  // Play animation on component mount
   useEffect(() => {
     playAnimation()
   }, [actions, names])
 
-  // **NEW: Add mouse interactivity for larger screens**
   useFrame(({ mouse }) => {
     if (!group.current) return;
 
-    // Only apply mouse tracking on larger screens
     if (window.innerWidth >= 768) {
-      // Calculate target rotation based on mouse position
-      const targetX = mouse.y * 0.3; // Vertical mouse movement affects X rotation
-      const targetY = mouse.x * 0.3; // Horizontal mouse movement affects Y rotation
-
-      // Smoothly interpolate to target rotation for natural movement
+      const targetX = mouse.y * 0.3;
+      const targetY = mouse.x * 0.3;
       group.current.rotation.x += (targetX - group.current.rotation.x) * 0.05;
       group.current.rotation.y += (targetY - group.current.rotation.y) * 0.05;
     }
@@ -92,7 +82,6 @@ function RobotModel({ ...props }) {
 useGLTF.preload('/robot_compress.glb')
 
 const HeroSection = () => {
-  // ... (all your existing state and effects remain exactly the same)
   const [currentInterestIndex, setCurrentInterestIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
@@ -137,7 +126,6 @@ const HeroSection = () => {
     }
   };
 
-  // All your animation variants remain the same...
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { duration: 0.8, ease: 'easeOut' } }
@@ -193,7 +181,6 @@ const HeroSection = () => {
       animate={isVisible ? "visible" : "hidden"}
     >
       <div className="w-full  mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Desktop & Tablet Layout */}
         <div className="hidden md:flex md:h-screen md:items-center md:justify-between">
           <motion.div 
             className="w-full lg:w-3/5 h-full flex flex-col justify-center items-center space-y-6"
@@ -212,8 +199,6 @@ const HeroSection = () => {
                 isMobile={isMobile}
               />
             </motion.div>
-
-            {/* All other JSX sections remain exactly the same... */}
             <motion.div 
               className="flex-[0.2] flex flex-col items-center justify-center text-center space-y-4"
               variants={containerVariants}
@@ -358,29 +343,28 @@ const HeroSection = () => {
           <motion.div 
   className="hidden lg:flex lg:w-3/5 h-full items-center justify-center"
   variants={placeholderVariants}
-  style={{ overflow: 'hidden' }} // Prevent any overflow issues
+  style={{ overflow: 'hidden' }}
 >
   <div className="w-full h-full" style={{ minHeight: '500px' }}>
     <Canvas
-      camera={{ position: [0, 0, 5], fov: 35 }} // Moved camera back and increased FOV
+      camera={{ position: [0, 0, 5], fov: 35 }}
       style={{ background: 'transparent' }}
       gl={{ alpha: true }}
     >
       <ambientLight intensity={1} />
-      {/* <Environment preset="night" /> */}
       <directionalLight position={[1, 1, 1]} intensity={1} />
       
       <RobotModel 
-        position={[0, -1, 0]}  // Centered vertically instead of [0, -2, 0]
-        scale={[1, 1, 1]}  // Scaled down to fit better
+        position={[0, -1, 0]}
+        scale={[1, 1, 1]} 
       />
       
       <OrbitControls 
         enableZoom={true}
         enablePan={true}
         enableRotate={true}
-        minDistance={5}  // Increased minimum distance
-        maxDistance={10} // Increased maximum distance
+        minDistance={5}
+        maxDistance={10}
         autoRotate={false}
       />
     </Canvas>
@@ -389,7 +373,6 @@ const HeroSection = () => {
 
         </div>
 
-        {/* Mobile Layout */}
         <div className="md:hidden flex flex-col min-h-screen py-8">
           <motion.div 
             className="flex-[0.35] flex items-center justify-center mb-6"
@@ -524,18 +507,7 @@ const HeroSection = () => {
                                                           className="text-2xl"
                                                         /></span>
               <div className="h-8 flex items-center">
-                {/* <AnimatePresence mode="wait">
-                  <motion.span
-                    key={currentInterestIndex}
-                    className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent text-xl font-semibold"
-                    variants={textRevealVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="hidden"
-                  >
-                    {interests[currentInterestIndex]}
-                  </motion.span>
-                </AnimatePresence> */}
+
                 <motion.span 
                   className="text-gray-300 font-light"
                   variants={greetingVariants}
@@ -561,17 +533,14 @@ const HeroSection = () => {
   );
 };
 
-// FIXED: Using original SVG path morphing with clipPath instead of patterns
 const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, size, isMobile }) => {
   const svgRef = useRef();
   const [pathData, setPathData] = useState('');
   const [gifKey, setGifKey] = useState(0);
 
-  // YOUR ORIGINAL EXACT PATHS - preserved completely!
   const defaultPath = "M200,50 C280,30 350,80 380,150 C400,220 370,290 320,340 C270,390 200,380 150,350 C100,320 80,250 90,180 C100,110 140,70 200,50 Z";
   const hoverPath = "M200,40 C290,20 360,70 390,140 C410,210 380,280 330,330 C280,380 210,390 160,360 C110,330 70,260 80,190 C90,120 130,60 200,40 Z";
 
-  // Size configurations
   const sizeConfig = {
     large: { 
       container: "w-[24rem] h-[24rem] lg:w-[24rem] lg:h-[24rem]",
@@ -595,7 +564,6 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
     }
   }, [isHovering]);
 
-  // YOUR ORIGINAL SMOOTH PATH MORPHING - preserved completely!
   useEffect(() => {
     if (!svgRef.current) return;
 
@@ -619,8 +587,6 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
 
     animate();
   }, [isHovering]);
-
-  // Generate unique IDs
   const clipPathId = `avatarClip-${size}`;
 
   return (
@@ -631,7 +597,6 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
       onTouchStart={onTouch}
       onClick={onTouch}
     >
-      {/* Mobile: Simple approach (working fine) */}
       {isMobile ? (
         <MobileAvatarImage 
           isHovering={isHovering}
@@ -640,7 +605,6 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
           gifKey={gifKey}
         />
       ) : (
-        /* FIXED: Desktop SVG with clipPath instead of patterns */
         <svg
           ref={svgRef}
           viewBox={config.viewBox}
@@ -660,7 +624,6 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
               <stop offset="100%" stopColor="#8a2be2" stopOpacity="0.5" />
             </radialGradient>
 
-            {/* FIXED: ClipPath with your exact morphing paths */}
             <clipPath id={clipPathId}>
               <path d={pathData} />
             </clipPath>
@@ -674,7 +637,6 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
             </filter>
           </defs>
 
-          {/* Background glow layers */}
           <path
             d={pathData}
             fill={isHovering ? `url(#hoverGradient-${size})` : `url(#avatarGradient-${size})`}
@@ -689,7 +651,6 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
             style={{ filter: 'blur(6px)' }}
           />
 
-          {/* FIXED: Static Image using clipPath */}
           <image 
             href="/coder.png"
             x="0" y="0" 
@@ -701,8 +662,6 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
               isHovering ? 'opacity-0' : 'opacity-100'
             }`}
           />
-          
-          {/* FIXED: GIF Image using clipPath */}
           <image 
             href={`/avatar-animated.gif?${gifKey}`}
             x="0" y="0" 
@@ -715,7 +674,6 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
             }`}
           />
 
-          {/* Border */}
           <path
             d={pathData}
             fill="none"
@@ -727,10 +685,7 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
         </svg>
       )}
 
-      {/* Floating Particles */}
       <FloatingParticles isHovering={isHovering} size={size} />
-
-      {/* Energy Rings */}
       <div className="absolute inset-0 pointer-events-none">
         {[...Array(3)].map((_, i) => (
           <motion.div
@@ -757,7 +712,6 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
   );
 };
 
-// Mobile component (working fine, unchanged)
 const MobileAvatarImage = ({ isHovering, pathData, config, gifKey }) => {
   const maskSvg = `url("data:image/svg+xml,${encodeURIComponent(`
     <svg viewBox="${config.viewBox}" xmlns="http://www.w3.org/2000/svg">
@@ -810,7 +764,6 @@ const MobileAvatarImage = ({ isHovering, pathData, config, gifKey }) => {
   );
 };
 
-// FloatingParticles component (unchanged)
 const FloatingParticles = ({ isHovering, size }) => {
   const particleCount = size === 'mobile' ? 8 : 12;
   
