@@ -8,4 +8,4 @@ const MainContent_all_scroll = () => {
   )
 }
 
-export default MainContent_all_scroll
+export default MainContent
