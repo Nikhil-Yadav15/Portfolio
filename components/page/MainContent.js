@@ -1,6 +1,6 @@
 import React from 'react'
 
-const MainContent_all_scroll = () => {
+const MainContent = () => {
   return (
     <div className='text-white flex items-center justify-center'>
       All Bad
