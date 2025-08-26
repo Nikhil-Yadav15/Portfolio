@@ -6,7 +6,7 @@ import { ExternalLink, Github } from "lucide-react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { cn } from "@/lib/utils";
-import { CardDemo } from "./background_overlay_card";
+import { CardDemo } from "./backgroundOverlayCard";
 import { OptimizedModal } from "./Modal";
 
 gsap.registerPlugin && gsap.registerPlugin(ScrollTrigger);
