@@ -1,11 +1,67 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import BlurText from '@/components/ui/BlurText';
+import BlurText from '@/components/ui/BlurText-noHover';
 import GradientText from '@/components/ui/GradientText';
 import RotatingText from '@/components/ui/RotatingText';
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, useGLTF, useAnimations } from '@react-three/drei'
+
+import { useNav } from '@/components/contexts/NavigationContext';
+import { ChevronDown } from 'lucide-react';
+
+import { gsap } from "gsap";
+import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+
+gsap.registerPlugin(ScrollToPlugin);  
+const ScrollHint = () => {
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setHidden(window.scrollY > 120);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  return (
+    <AnimatePresence>
+      {!hidden && (
+        <motion.button
+          aria-label="Scroll down"
+
+          onClick={() => {
+            gsap.to(window, {
+              duration: 4, 
+              scrollTo: 3* window.innerHeight,
+              ease: "easeOutCirc"
+            });
+          }}
+          className="group cursor-pointer fixed left-1/2 -translate-x-1/2 bottom-6 z-30 flex flex-col items-center gap-1 rounded-full px-4 py-2"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 8 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+        >
+          <span className="  absolute inset-0 rounded-full blur-md opacity-40 group-hover:opacity-60 transition-opacity bg-gradient-to-r from-cyan-400 to-pink-400" />
+          
+          <span className=" font-lora relative text-sm font-bold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-blue-300">
+            Scroll Down
+          </span>
+
+          <motion.div
+            aria-hidden
+            className="relative"
+            animate={{ y: [0, 6, 0] }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <ChevronDown className="h-5 w-5 text-cyan-300/90 group-hover:text-pink-300 transition-colors" />
+          </motion.div>
+        </motion.button>
+      )}
+    </AnimatePresence>
+  );
+};
 
 function RobotModel({ ...props }) {
   const group = useRef()
@@ -23,11 +79,10 @@ function RobotModel({ ...props }) {
             .reset()
             .setLoop(2201, 1)
             .fadeIn(0.5)
-          
           action.time = 2
           action.play()
           setIsPlaying(true)
-          
+
           const duration = action.getClip().duration
           const stopTime = (duration - 2) * 0.8
           
@@ -54,10 +109,10 @@ function RobotModel({ ...props }) {
 
   useFrame(({ mouse }) => {
     if (!group.current) return;
-
     if (window.innerWidth >= 768) {
       const targetX = mouse.y * 0.3;
       const targetY = mouse.x * 0.3;
+
       group.current.rotation.x += (targetX - group.current.rotation.x) * 0.05;
       group.current.rotation.y += (targetY - group.current.rotation.y) * 0.05;
     }
@@ -87,6 +142,13 @@ const HeroSection = () => {
   const [isHovering, setIsHovering] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  const { setCurrentSection } = useNav();
+
+  useEffect(() => {
+    setCurrentSection("hero");
+    console.log("Current section set to 'hero'");
+  }, [setCurrentSection]);
 
   const interests = [
     "Web Development",
@@ -199,6 +261,7 @@ const HeroSection = () => {
                 isMobile={isMobile}
               />
             </motion.div>
+
             <motion.div 
               className="flex-[0.2] flex flex-col items-center justify-center text-center space-y-4"
               variants={containerVariants}
@@ -213,7 +276,7 @@ const HeroSection = () => {
                   delay={150}
                   animateBy="chars"
                   direction="top"
-                  className="text-4xl"
+                  className="text-4xl font-lora"
                 />
                 </motion.span>
                 <motion.span 
@@ -224,7 +287,7 @@ const HeroSection = () => {
                     colors={["#40ffaa", "#4079ff", "#40ffaa", "#4079ff", "#40ffaa"]}
                     animationSpeed={3}
                     showBorder={false}
-                    className="custom-class"
+                    className="custom-class font-lora"
                   >
                     Nikhil Yadav  
                   </GradientText>
@@ -243,7 +306,7 @@ const HeroSection = () => {
                     delay={150}
                     animateBy="words"
                     direction="top"
-                    className="text-gray-300"
+                    className="text-gray-300 font-lora"
                   />
                   <BlurText
                   as="span"
@@ -251,7 +314,7 @@ const HeroSection = () => {
                   delay={150}
                   animateBy="chars"
                   direction="top"
-                  className="font-semibold"
+                  className="font-semibold font-lora"
                   gradientClass="bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent"
                 />
                   <BlurText
@@ -260,7 +323,7 @@ const HeroSection = () => {
                     delay={170}
                     animateBy="chars"
                     direction="top"
-                    className="text-gray-300"
+                    className="text-gray-300 font-lora"
                   />
                   <BlurText
                     as="span"
@@ -268,7 +331,7 @@ const HeroSection = () => {
                     delay={170}
                     animateBy="chars"
                     direction="top"
-                    gradientClass="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent font-semibold"
+                    gradientClass="font-lora bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent font-semibold"
                   />
                   <BlurText
                     as="span"
@@ -276,7 +339,7 @@ const HeroSection = () => {
                     delay={180}
                     animateBy="chars"
                     direction="top"
-                    className="text-gray-300"
+                    className="text-gray-300 font-lora"
                   />
                   <BlurText
                     as="span"
@@ -284,7 +347,7 @@ const HeroSection = () => {
                     delay={180}
                     animateBy="chars"
                     direction="top"
-                    gradientClass="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent font-semibold"
+                    gradientClass="font-lora bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent font-semibold"
                   />
                   <BlurText
                     as="span"
@@ -292,7 +355,7 @@ const HeroSection = () => {
                     delay={190}
                     animateBy="chars"
                     direction="top"
-                    className="text-gray-300"
+                    className="text-gray-300 font-lora"
                   />
                   <BlurText
                     as="span"
@@ -300,7 +363,7 @@ const HeroSection = () => {
                     delay={185}
                     animateBy="chars"
                     direction="top"
-                    gradientClass="bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent font-semibold"
+                    gradientClass=" font-lora bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent font-semibold"
                   />
                 </div>
 
@@ -316,7 +379,7 @@ const HeroSection = () => {
                                                           delay={110}
                                                           animateBy="chars"
                                                           direction="top"
-                                                          className="text-2xl"
+                                                          className="text-2xl font-lora"
                                                         /></span>
                 <div className="h-12 flex items-center">
                   <motion.span 
@@ -325,7 +388,7 @@ const HeroSection = () => {
                 >
                   <RotatingText
                       texts={interests}
-                      mainClassName="px-2 sm:px-2 md:px-3 bg-gradient-to-r from-emerald-400 to-blue-400  font-semibold overflow-hidden text-white py-0.5 sm:py-1 md:py-2 justify-center rounded-lg"
+                      mainClassName="px-2 sm:px-2 md:px-3 font-lora bg-black/20 font-semibold overflow-hidden text-white py-0.5 sm:py-1 md:py-2 justify-center rounded-lg"
                       staggerFrom={"last"}
                       initial={{ y: "100%" }}
                       animate={{ y: 0 }}
@@ -343,7 +406,7 @@ const HeroSection = () => {
           <motion.div 
   className="hidden lg:flex lg:w-3/5 h-full items-center justify-center"
   variants={placeholderVariants}
-  style={{ overflow: 'hidden' }}
+  style={{ overflow: 'hidden' }} 
 >
   <div className="w-full h-full" style={{ minHeight: '500px' }}>
     <Canvas
@@ -355,7 +418,7 @@ const HeroSection = () => {
       <directionalLight position={[1, 1, 1]} intensity={1} />
       
       <RobotModel 
-        position={[0, -1, 0]}
+        position={[0, -1, 0]} 
         scale={[1, 1, 1]} 
       />
       
@@ -363,8 +426,8 @@ const HeroSection = () => {
         enableZoom={true}
         enablePan={true}
         enableRotate={true}
-        minDistance={5}
-        maxDistance={10}
+        minDistance={5} 
+        maxDistance={10} 
         autoRotate={false}
       />
     </Canvas>
@@ -372,7 +435,6 @@ const HeroSection = () => {
 </motion.div>
 
         </div>
-
         <div className="md:hidden flex flex-col min-h-screen py-8">
           <motion.div 
             className="flex-[0.35] flex items-center justify-center mb-6"
@@ -529,6 +591,7 @@ const HeroSection = () => {
           </motion.div>
         </div>
       </div>
+      <ScrollHint />
     </motion.section>
   );
 };
@@ -587,6 +650,7 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
 
     animate();
   }, [isHovering]);
+
   const clipPathId = `avatarClip-${size}`;
 
   return (
@@ -623,7 +687,6 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
               <stop offset="50%" stopColor="#00f5ff" stopOpacity="0.7" />
               <stop offset="100%" stopColor="#8a2be2" stopOpacity="0.5" />
             </radialGradient>
-
             <clipPath id={clipPathId}>
               <path d={pathData} />
             </clipPath>
@@ -662,6 +725,7 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
               isHovering ? 'opacity-0' : 'opacity-100'
             }`}
           />
+          
           <image 
             href={`/avatar-animated.gif?${gifKey}`}
             x="0" y="0" 
@@ -686,6 +750,7 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
       )}
 
       <FloatingParticles isHovering={isHovering} size={size} />
+
       <div className="absolute inset-0 pointer-events-none">
         {[...Array(3)].map((_, i) => (
           <motion.div
