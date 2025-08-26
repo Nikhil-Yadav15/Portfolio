@@ -1,12 +1,21 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --animate-shimmer-slide: shimmer-slide var(--speed) ease-in-out infinite
+    alternate;
+  --animate-spin-around: spin-around calc(var(--speed) * 2) infinite linear;
+  --animate-background-position-spin: background-position-spin 3000ms infinite
+    alternate;
+  --animate-spotlight: spotlight 2s ease 0.75s 1 forwards;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
+  --font-lora: var(--font-lora);
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -116,6 +125,11 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+  
   body {
     @apply bg-background text-foreground;
   }
@@ -147,27 +161,21 @@
   animation-iteration-count: infinite;
 }
 
-
-
-/* !Hero */
 .gpu-accelerated {
   will-change: transform;
   transform: translateZ(0);
 }
 
-/* Apply to animated elements */
 .motion-div {
   transform: translateZ(0);
   backface-visibility: hidden;
   perspective: 1000px;
 }
 
-/* Additional styles for better visual effects */
 .border-gradient-to-r {
   border-image: linear-gradient(45deg, #a855f7, #ec4899, #ef4444) 1;
 }
 
-/* Custom animations */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-20px); }
@@ -177,7 +185,6 @@
   animation: float 3s ease-in-out infinite;
 }
 
-/* Glowing effect for interactive elements */
 .glow-on-hover {
   transition: all 0.3s ease;
 }
@@ -186,13 +193,11 @@
   box-shadow: 0 0 20px rgba(168, 85, 247, 0.6);
 }
 
-/* !Avatar */
-/* Hexagonal Clip Path */
+
 .hexagon-clip {
   clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
 }
 
-/* Custom Animations */
 @keyframes spin-slow {
   from {
     transform: rotate(0deg);
@@ -224,7 +229,6 @@
   animation: scan-down 1.5s ease-in-out;
 }
 
-/* Additional Glow Effects */
 .avatar-container::before {
   content: '';
   position: absolute;
@@ -242,7 +246,6 @@
   opacity: 1;
 }
 
-/* Glass Fragment Styles */
 .glass-fragment {
   position: relative;
   overflow: hidden;
@@ -274,7 +277,6 @@
   );
 }
 
-/* Glass reflection animations */
 .glass-fragment::before {
   content: '';
   position: absolute;
@@ -296,4 +298,85 @@
   opacity: 1;
 }
 
+@keyframes spotlight {
+  0% {
+    opacity: 0;
+    transform: translate(-72%, -62%) scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -40%) scale(1);
+  }
+}
 
+@keyframes harmonic-oscillation {
+  0% {
+    transform: translateY(0px);
+  }
+  25% {
+    transform: translateY(-3px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+  75% {
+    transform: translateY(-3px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+
+@layer utilities {
+  .hide-spline-watermark::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 15dvw;
+    height: 15dvh;
+    min-width: 80px;
+    min-height: 30px;
+    background: linear-gradient(to top, black, black, transparent);
+    pointer-events: none;
+    z-index: 10;
+  }
+
+}
+
+.fade-up { transition: opacity 450ms var(--ease, cubic-bezier(.2,.9,.2,1)), transform 450ms var(--ease); }
+.fade-up-visible { opacity: 1 !important; transform: translateY(0) !important; }
+
+
+@keyframes shimmer-slide {
+  to {
+    transform: translate(calc(100cqw - 100%), 0);
+  }
+}
+@keyframes spin-around {
+  0% {
+    transform: translateZ(0) rotate(0);
+  }
+  15%,
+  35% {
+    transform: translateZ(0) rotate(90deg);
+  }
+  65%,
+  85% {
+    transform: translateZ(0) rotate(270deg);
+  }
+  100% {
+    transform: translateZ(0) rotate(360deg);
+  }
+}
+
+@keyframes background-position-spin {
+  0% {
+    background-position: top center;
+  }
+  100% {
+    background-position: bottom center;
+  }
+}
+/* ! */
