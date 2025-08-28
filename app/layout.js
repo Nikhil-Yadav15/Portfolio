@@ -1,6 +1,5 @@
 import { Geist, Geist_Mono, Lora, Pinyon_Script } from "next/font/google";
 import "./globals.css";
-import {Toaster} from '@/components/ui/sonner'
 import DarkNavbar  from '@/components/page/Navbar'
 
 import { NavProvider } from "@/components/contexts/NavigationContext";
@@ -49,7 +48,6 @@ export default function RootLayout({ children }) {
             mobileClassName="custom-mobile-styles" 
           />
           {children}
-          <Toaster />
         </NavProvider>
       </body>
     </html>
