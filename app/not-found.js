@@ -60,17 +60,17 @@ export default function NotFound() {
     <div className="relative flex flex-col z-50 items-center justify-center h-screen text-white overflow-hidden bg-black">
       <div ref={mountRef} className="absolute inset-0 -z-10" />
       <motion.h1
-        className="text-5xl font-bold mb-4 text-center"
+        className="text-5xl font-lora font-bold mb-4 text-center"
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1 }}
       >
-        Lost in the Space-Time Fabric
+        Lost in the Space-Time Fabric?
       </motion.h1>
 
 
       <motion.p
-        className="text-lg mb-8 text-center max-w-xl opacity-80"
+        className="text-lg mb-8 font-lora text-center max-w-xl opacity-80"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.8, duration: 1 }}
@@ -79,7 +79,7 @@ export default function NotFound() {
       </motion.p>
       <Link href="/">
         <motion.button
-          className="px-6 cursor-pointer py-3 bg-white text-black font-semibold rounded-2xl shadow-lg hover:scale-105 transition"
+          className="px-6 font-lora cursor-pointer py-3 bg-white text-black font-semibold rounded-2xl shadow-lg hover:scale-105 transition"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >
