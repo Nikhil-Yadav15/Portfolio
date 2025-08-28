@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState, lazy, Suspense } from "react";
 import BlurText from "@/components/ui/BlurText";
-import { Cover } from "@/components/ui/cover";
 import DecryptedText from '@/components/ui/DecryptedText';
 import { VideoText } from '@/components/ui/VideoTextMask';
 import {TextRevealCard} from "@/components/ui/text-reveal-card";
