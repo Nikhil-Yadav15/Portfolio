@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import {CombinedExpandableStickyScroll} from "@/components/uiontest/CombinedExpandableStickyScroll";
+import {CombinedExpandableStickyScroll} from "@/components/helpers/ExpandableStickyScroll";
 import BlurText from "@/components/ui/BlurText";
 import { RecentProjects } from "@/data/RecentProjects";
 
