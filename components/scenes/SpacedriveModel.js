@@ -19,18 +19,18 @@ function SceneBackground() {
 
 export function SpacedriveModel({ onFlashComplete, ...props }) {
   const gltf = useGLTF('/spacedrive_fab_compress.glb')
-  if (!gltf || !gltf.scene) return null
 
-  const { scene, animations } = gltf
-  const { actions } = useAnimations(animations, scene)
-
+  const { actions } = useAnimations(gltf?.animations || [], gltf?.scene)
+  
   const flashRef = useRef()
   const lightRef = useRef()
   const overlayRef = useRef()
   const intensityRef = useRef(0)
   const [showFlash, setShowFlash] = useState(false)
   const [flashComplete, setFlashComplete] = useState(false)
-
+  if (!gltf || !gltf.scene) return null
+  
+  const { scene, animations } = gltf
   useEffect(() => {
     if (!gltf.scene) return
     
