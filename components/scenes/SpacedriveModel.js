@@ -19,22 +19,19 @@ function SceneBackground() {
 
 export function SpacedriveModel({ onFlashComplete, ...props }) {
   const gltf = useGLTF('/spacedrive_fab_compress.glb')
+  const { scene, animations } = gltf || {}
+  const { actions } = useAnimations(animations || [], scene)
 
-  const { actions } = useAnimations(gltf?.animations || [], gltf?.scene)
-  
   const flashRef = useRef()
   const lightRef = useRef()
   const overlayRef = useRef()
   const intensityRef = useRef(0)
   const [showFlash, setShowFlash] = useState(false)
   const [flashComplete, setFlashComplete] = useState(false)
-  if (!gltf || !gltf.scene) return null
-  
-  const { scene, animations } = gltf
+
   useEffect(() => {
-    if (!gltf.scene) return
-    
-    gltf.scene.traverse((child) => {
+    if (!scene) return
+    scene.traverse((child) => {
       if (child.isMesh) {
         child.material = child.material.clone()
         if (child.material.emissive) child.material.emissive.multiplyScalar(0.1)
@@ -43,10 +40,10 @@ export function SpacedriveModel({ onFlashComplete, ...props }) {
         child.material.needsUpdate = true
       }
     })
-  }, [gltf])
+  }, [scene])
 
   useEffect(() => {
-    if (actions && animations.length > 0) {
+    if (actions && animations && animations.length > 0) {
       const action = actions[animations[0].name]
       if (action) {
         action.setEffectiveTimeScale(4.0)
@@ -58,19 +55,15 @@ export function SpacedriveModel({ onFlashComplete, ...props }) {
   useEffect(() => {
     const timeoutFlash = setTimeout(() => {
       setShowFlash(true)
-      
-      const completeTimeout = setTimeout(() => {
 
-        setFlashComplete(true);
-        
-        if (onFlashComplete) {
-          onFlashComplete();
-        }
-      }, 800);
-      
-      return () => clearTimeout(completeTimeout);
+      const completeTimeout = setTimeout(() => {
+        setFlashComplete(true)
+        if (onFlashComplete) onFlashComplete()
+      }, 800)
+
+      return () => clearTimeout(completeTimeout)
     }, 2000)
-    
+
     return () => clearTimeout(timeoutFlash)
   }, [onFlashComplete])
 
@@ -78,7 +71,7 @@ export function SpacedriveModel({ onFlashComplete, ...props }) {
     if (showFlash && !flashComplete && flashRef.current && lightRef.current && overlayRef.current) {
       intensityRef.current = Math.min(intensityRef.current + 0.5, 25)
       const currentIntensity = intensityRef.current
-      
+
       lightRef.current.intensity = currentIntensity
       flashRef.current.material.emissiveIntensity = currentIntensity
       flashRef.current.scale.setScalar(1 + currentIntensity * 1.2)
@@ -86,37 +79,39 @@ export function SpacedriveModel({ onFlashComplete, ...props }) {
     }
   })
 
+  if (!scene) return null
+
   return (
     <>
       <SceneBackground />
       <primitive object={scene} scale={1} {...props} />
-      
+
       {showFlash && !flashComplete && (
         <>
           <mesh ref={flashRef} position={[0, 0, 1]}>
             <sphereGeometry args={[0.3, 32, 32]} />
             <meshStandardMaterial
               emissive={new THREE.Color('white')}
-              emissiveIntensity={0} 
+              emissiveIntensity={0}
               toneMapped={false}
             />
           </mesh>
-          
-          <pointLight 
-            ref={lightRef} 
+
+          <pointLight
+            ref={lightRef}
             position={[0, 0, 1]}
-            color="white" 
-            intensity={0} 
-            distance={20} 
-            decay={1.5} 
+            color="white"
+            intensity={0}
+            distance={20}
+            decay={1.5}
           />
-          
+
           <mesh ref={overlayRef} position={[0, 0, 4]} scale={[60, 60, 1]}>
             <planeGeometry args={[1, 1]} />
-            <meshBasicMaterial 
-              color="white" 
-              transparent 
-              opacity={0} 
+            <meshBasicMaterial
+              color="white"
+              transparent
+              opacity={0}
               toneMapped={false}
             />
           </mesh>
@@ -134,5 +129,6 @@ export function SpacedriveModel({ onFlashComplete, ...props }) {
     </>
   )
 }
+
 
 export { SceneBackground }
