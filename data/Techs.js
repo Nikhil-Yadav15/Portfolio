@@ -72,16 +72,8 @@ export const techItems = [
       link: 'https://github.com/'
     },
     {
-      image: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vscode/vscode-original-wordmark.svg',
-      link: 'https://code.visualstudio.com/'
-    },
-    {
       image: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg',
       link: 'https://www.docker.com/'
-    },
-    {
-      image: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/googlecolab/googlecolab-original.svg',
-      link: 'https://colab.research.google.com/'
     },
     {
       image: '/tech_svg/nextdotjs-color.svg',
