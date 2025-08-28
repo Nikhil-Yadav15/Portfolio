@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion, useAnimation } from 'framer-motion';
 import { useEffect, useRef, useState, useMemo } from 'react';
 
 const buildKeyframes = (from, steps) => {
@@ -15,11 +15,11 @@ const buildKeyframes = (from, steps) => {
 };
 
 const BlurText = ({
-  as: Tag = 'p', // NEW: Allow custom wrapper element (span for inline)
+  as: Tag = 'p', 
   text = '',
   delay = 200,
   className = '',
-  gradientClass = '', // NEW: Separate gradient classes for inner spans
+  gradientClass = '',
   animateBy = 'words',
   direction = 'top',
   threshold = 0.1,
@@ -29,12 +29,20 @@ const BlurText = ({
   easing = (t) => t,
   onAnimationComplete,
   stepDuration = 0.35,
+  // !
+  forceStart = false
+  // !
 }) => {
   const elements = animateBy === 'words' ? (text || '').split(' ') : (text || '').split('');
-  const [inView, setInView] = useState(false);
+  const [inView, setInView] = useState(forceStart);
+  const [replayTrigger, setReplayTrigger] = useState(0);
   const ref = useRef(null);
 
   useEffect(() => {
+    if (forceStart) {
+      setInView(true);
+      return; 
+    }
     if (!ref.current) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -47,8 +55,7 @@ const BlurText = ({
     );
     observer.observe(ref.current);
     return () => observer.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [threshold, rootMargin]);
+  }, [threshold, rootMargin, forceStart]);
 
   const defaultFrom = useMemo(
     () =>
@@ -79,35 +86,91 @@ const BlurText = ({
     stepCount === 1 ? 0 : i / (stepCount - 1)
   );
 
+  const animateKeyframes = buildKeyframes(fromSnapshot, toSnapshots);
+
+  const AnimatedSegment = ({
+    children,
+    index,
+    inView,
+    replayTrigger,
+    delay,
+    fromSnapshot,
+    animateKeyframes,
+    totalDuration,
+    times,
+    easing,
+    gradientClass,
+    isLast,
+    onAnimationComplete,
+  }) => {
+    const controls = useAnimation();
+
+    const spanTransition = useMemo(
+      () => ({
+        duration: totalDuration,
+        times,
+        delay: (index * delay) / 1000,
+        ease: easing,
+      }),
+      [index, delay, totalDuration, times, easing]
+    );
+
+    useEffect(() => {
+      if (!inView) return;
+      if (replayTrigger > 0) {
+        controls.set(fromSnapshot);
+      }
+      controls.start(animateKeyframes, spanTransition);
+    }, [
+      inView,
+      replayTrigger,
+      controls,
+      fromSnapshot,
+      animateKeyframes,
+      spanTransition,
+    ]);
+
+    return (
+      <motion.span
+        className={`inline-block will-change-[transform,filter,opacity] ${gradientClass}`}
+        initial={fromSnapshot}
+        animate={controls}
+        onAnimationComplete={isLast ? onAnimationComplete : undefined}
+      >
+        {children}
+      </motion.span>
+    );
+  };
+
   return (
     <Tag
       ref={ref}
       className={`blur-text ${className} ${Tag === 'span' ? 'inline-flex' : 'flex'} flex-wrap`}
+      onMouseEnter={() => setReplayTrigger((prev) => prev + 1)}
     >
       {elements.map((segment, index) => {
-        const animateKeyframes = buildKeyframes(fromSnapshot, toSnapshots);
-
-        const spanTransition = {
-          duration: totalDuration,
-          times,
-          delay: (index * delay) / 1000,
-        };
-        (spanTransition).ease = easing;
+        const content = segment === ' ' ? '\u00A0' : segment;
+        const extra =
+          animateBy === 'words' && index < elements.length - 1 ? '\u00A0' : '';
 
         return (
-          <motion.span
-            className={`inline-block will-change-[transform,filter,opacity] ${gradientClass}`} // Apply gradient to inner spans
+          <AnimatedSegment
             key={index}
-            initial={fromSnapshot}
-            animate={inView ? animateKeyframes : fromSnapshot}
-            transition={spanTransition}
-            onAnimationComplete={
-              index === elements.length - 1 ? onAnimationComplete : undefined
-            }
+            index={index}
+            inView={inView}
+            replayTrigger={replayTrigger}
+            delay={delay}
+            fromSnapshot={fromSnapshot}
+            animateKeyframes={animateKeyframes}
+            totalDuration={totalDuration}
+            times={times}
+            easing={easing}
+            gradientClass={gradientClass}
+            isLast={index === elements.length - 1}
+            onAnimationComplete={onAnimationComplete}
           >
-            {segment === ' ' ? '\u00A0' : segment}
-            {animateBy === 'words' && index < elements.length - 1 && '\u00A0'}
-          </motion.span>
+            {`${content}${extra}`}
+          </AnimatedSegment>
         );
       })}
     </Tag>
@@ -115,3 +178,4 @@ const BlurText = ({
 };
 
 export default BlurText;
+
