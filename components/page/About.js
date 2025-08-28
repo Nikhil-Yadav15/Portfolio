@@ -151,7 +151,7 @@ const About = () => {
       {!isMobile && (
         <div className="w-full lg:w-[45dvw] flex items-start justify-center relative overflow-hidden min-h-[50vh] hide-spline-watermark lg:min-h-screen">
           <Suspense fallback={<div>Loading 3D model...</div>}>
-            <LazySpline scene="https://prod.spline.design/7qYwf6Jlk5mgmiyp/scene.splinecode" />
+            <LazySpline scene="https://prod.spline.design/WCl3Q-TO45nDydSB/scene.splinecode" />
           </Suspense>
         </div>
       )}
