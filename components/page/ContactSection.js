@@ -74,7 +74,6 @@ export default function ContactSection() {
                   className="cursor-pointer font-lora text-4xl md:text-5xl lg:text-6xl font-bold  mb-4 flex justify-center text-blue-100"
                 />
         </motion.div>
-
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -85,18 +84,17 @@ export default function ContactSection() {
             borderSize={4}
             borderRadius={24}
             neonColors={{
-              firstColor: "#8B5CF6", // nebula violet
-              secondColor: "#3B0764", // deep space purple
+              firstColor: "#8B5CF6", 
+              secondColor: "#3B0764",
             }}
             spotlight={{
-
               radius: 350,
               maskColor: "#000000",
               canvasColors: [
-                [139, 92, 246], // nebula violet
-                [59, 7, 100],   // deep space purple
-                [168, 85, 247], // stellar purple
-                [236, 72, 153], // galaxy pink
+                [139, 92, 246], 
+                [59, 7, 100],   
+                [168, 85, 247], 
+                [236, 72, 153], 
               ],
               dotSize: 2,
             }}
@@ -109,7 +107,8 @@ export default function ContactSection() {
                 className="flex flex-col gap-6"
                 autoComplete="off"
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> 
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -135,7 +134,6 @@ export default function ContactSection() {
                       </motion.p>
                     )}
                   </motion.div>
-
 
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
@@ -217,7 +215,6 @@ export default function ContactSection() {
                     </motion.p>
                   )}
                 </motion.div>
-
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -251,7 +248,7 @@ export default function ContactSection() {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-green-400 text-center text-sm font-mono bg-green-400/10 border border-green-400/30 rounded-lg p-3"
                   >
-                    ✅ Message transmitted successfully! I'll respond soon 🚀
+                    ✅ Message transmitted successfully! I&apos;ll respond soon 🚀
                   </motion.div>
                 )}
                 {serverState && !serverState.ok && (
@@ -279,6 +276,7 @@ export default function ContactSection() {
           >
             <div className="flex items-center">
               <span className="text-cyan-400 mr-2">&gt;</span>
+
               <div className="w-64 md:w-80 overflow-hidden">
                 <TypewriterEffect 
                   words={words} 
@@ -288,6 +286,7 @@ export default function ContactSection() {
               </div>
             </div>
           </motion.div>
+
 
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -301,7 +300,7 @@ export default function ContactSection() {
                 filter: "drop-shadow(0 0 12px #a855f7)"
               }}
               whileTap={{ scale: 0.95 }}
-              href="https://github.com/yourgithub"
+              href="https://github.com/Nikhil-Yadav15"
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-full p-3 text-gray-400 hover:text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white/5 backdrop-blur-sm"
@@ -314,7 +313,7 @@ export default function ContactSection() {
                 filter: "drop-shadow(0 0 12px #a855f7)"
               }}
               whileTap={{ scale: 0.95 }}
-              href="https://linkedin.com/in/yourlinkedin"
+              href="https://www.linkedin.com/in/nikhil-yadav-593a98321"
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-full p-3 text-gray-400 hover:text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white/5 backdrop-blur-sm"
@@ -327,7 +326,7 @@ export default function ContactSection() {
                 filter: "drop-shadow(0 0 12px #22d3ee)"
               }}
               whileTap={{ scale: 0.95 }}
-              href="https://discord.com/users/yourdiscord"
+              href="https://discord.com/users/codeslinger24"
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-full p-3 text-gray-400 hover:text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white/5 backdrop-blur-sm"
@@ -340,9 +339,9 @@ export default function ContactSection() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 1.0 }}
-            className="text-sm text-gray-500 text-center md:text-right font-mono order-3"
+            className="text-3xl  text-white text-center md:text-right font-pinyon-script order-3"
           >
-            © 2025 Nikhil Yadav
+            © Nikhil Yadav
           </motion.div>
         </div>
       </footer>
