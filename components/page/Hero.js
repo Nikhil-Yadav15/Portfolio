@@ -89,7 +89,6 @@ function RobotModel({ ...props }) {
           setTimeout(() => {
             action.paused = true
             setIsPlaying(false)
-            console.log(`Animation ${name} stopped before disappearing`)
           }, stopTime * 1000)
         }
       })
@@ -147,16 +146,13 @@ const HeroSection = () => {
 
   useEffect(() => {
     setCurrentSection("hero");
-    console.log("Current section set to 'hero'");
   }, [setCurrentSection]);
 
   const interests = [
     "Web Development",
     "Machine Learning", 
     "Data Science",
-    "UI/UX Design",
-    "Automation",
-    "Mobile Apps"
+    "Automation"
   ];
 
   useEffect(() => {
