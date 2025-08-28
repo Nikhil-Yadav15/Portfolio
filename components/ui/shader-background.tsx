@@ -26,20 +26,16 @@ interface CameraControllerProps {
   isHovering: boolean;
 }
 
-/**
- * GPU-optimized star particle system component
- */
+
 function StarParticles({ count, radius, color, size, speed }: StarParticlesProps) {
   const pointsRef = useRef<THREE.Points>(null!);
 
-  // Generate particle positions once (memoized for performance)
   const positions = useMemo(() => {
     const pos = new Float32Array(count * 3);
     
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
-      
-      // Spherical coordinates for even distribution
+   
       const phi = Math.acos(2 * Math.random() - 1);
       const theta = 2 * Math.PI * Math.random();
       const r = radius + (Math.random() - 0.5) * 20;
@@ -52,7 +48,6 @@ function StarParticles({ count, radius, color, size, speed }: StarParticlesProps
     return pos;
   }, [count, radius]);
 
-  // Animation loop for rotation
   useFrame(() => {
     if (pointsRef.current) {
       pointsRef.current.rotation.y += speed;
@@ -84,9 +79,6 @@ function StarParticles({ count, radius, color, size, speed }: StarParticlesProps
   );
 }
 
-/**
- * Multiple particle layers for depth and complexity
- */
 function StarField({ color, particleCount, particleSize, rotationSpeed }: {
   color: string;
   particleCount: number;
@@ -95,7 +87,6 @@ function StarField({ color, particleCount, particleSize, rotationSpeed }: {
 }) {
   return (
     <>
-      {/* Main star field */}
       <StarParticles 
         count={particleCount} 
         radius={40} 
@@ -104,36 +95,30 @@ function StarField({ color, particleCount, particleSize, rotationSpeed }: {
         speed={rotationSpeed}
       />
       
-      {/* Distant stars layer */}
       <StarParticles 
         count={Math.floor(particleCount * 0.4)} 
         radius={80} 
         color={color} 
-        size={particleSize * 0.6}
+        size={particleSize * 0.7}
         speed={rotationSpeed * 0.5}
       />
-      
-      {/* Close bright stars */}
+
       <StarParticles 
         count={Math.floor(particleCount * 0.1)} 
         radius={20} 
         color={color} 
-        size={particleSize * 1.5}
+        size={particleSize * 0.7}
         speed={rotationSpeed * 1.5}
       />
     </>
   );
 }
 
-/**
- * Camera controller for smooth mouse interaction
- */
 function CameraController({ mousePosition, isHovering }: CameraControllerProps) {
   const { camera } = useThree();
 
   useFrame(() => {
     if (isHovering) {
-      // Smooth camera movement based on mouse position
       const targetX = mousePosition.x * 5;
       const targetY = mousePosition.y * 5;
       
@@ -141,7 +126,6 @@ function CameraController({ mousePosition, isHovering }: CameraControllerProps) 
       camera.position.y += (targetY - camera.position.y) * 0.05;
       camera.lookAt(0, 0, 0);
     } else {
-      // Return to center position smoothly
       camera.position.x += (0 - camera.position.x) * 0.02;
       camera.position.y += (0 - camera.position.y) * 0.02;
       camera.lookAt(0, 0, 0);
@@ -151,9 +135,6 @@ function CameraController({ mousePosition, isHovering }: CameraControllerProps) 
   return null;
 }
 
-/**
- * React component with sharp 3D star particle background
- */
 function ShaderBackground({
   color = "#ffffff",
   backgroundColor = "#000011",
@@ -167,7 +148,6 @@ function ShaderBackground({
   const [isHovering, setIsHovering] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Mouse interaction setup
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -197,7 +177,6 @@ function ShaderBackground({
     };
   }, []);
 
-  // Determine background style - gradient takes priority
   const backgroundStyle = gradient ? { background: gradient } : { backgroundColor };
 
   return (
@@ -206,7 +185,6 @@ function ShaderBackground({
       className={`w-full max-w-screen h-full overflow-hidden relative ${className}`}
       style={backgroundStyle}
     >
-
       <Canvas
         className="absolute inset-0 w-full h-full"
         camera={{ 
@@ -221,10 +199,8 @@ function ShaderBackground({
           powerPreference: "high-performance"
         }}
       >
-        {/* Subtle ambient light */}
         <ambientLight intensity={0.2} color={color} />
         
-        {/* Interactive camera that follows mouse */}
         <CameraController mousePosition={mousePosition} isHovering={isHovering} />
         
         <StarField 
@@ -234,8 +210,11 @@ function ShaderBackground({
           rotationSpeed={rotationSpeed}
         />
       </Canvas>
+
     </div>
   );
 }
 
 export default ShaderBackground;
+
+
