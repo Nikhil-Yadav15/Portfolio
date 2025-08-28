@@ -45,26 +45,26 @@ export const RecentProjects = [
       ),
     },
   },
-  {
-    title: "Developer Tools",
-    description: "Utilities that enhance local knowledge discovery and automate contextual file search.",
-    card: {
-      title: "Contextual File Searcher (MCP)",
-      description: "Semantic + Keyword Hybrid Search",
-      src: "/gemini.png",
-      ctaText: "View Repository",
-      ctaLink: "https://github.com/Nikhil-Yadav15/ContextualFileSearchMCP",
-      tech: ["Python", "Sentence-Transformers", "PyPDF2", "Openpyxl", "FastMCP", "JSON"],
-      short: "MCP tool that finds files by meaning and keywords across PDFs, docs, sheets, and code.",
-      content: () => (
-        <div>
-          <p>Hybrid relevance scoring (semantic similarity, filename matching, keyword frequency) with unified text extraction.</p>
-          <br />
-          <p>Optimized using multithreading and depth-limited recursion for fast, large-scale directory scans.</p>
-        </div>
-      ),
-    },
-  },
+  // {
+  //   title: "Developer Tools",
+  //   description: "Utilities that enhance local knowledge discovery and automate contextual file search.",
+  //   card: {
+  //     title: "Contextual File Searcher (MCP)",
+  //     description: "Semantic + Keyword Hybrid Search",
+  //     src: "/gemini.png",
+  //     ctaText: "View Repository",
+  //     ctaLink: "https://github.com/Nikhil-Yadav15/ContextualFileSearchMCP",
+  //     tech: ["Python", "Sentence-Transformers", "PyPDF2", "Openpyxl", "FastMCP", "JSON"],
+  //     short: "MCP tool that finds files by meaning and keywords across PDFs, docs, sheets, and code.",
+  //     content: () => (
+  //       <div>
+  //         <p>Hybrid relevance scoring (semantic similarity, filename matching, keyword frequency) with unified text extraction.</p>
+  //         <br />
+  //         <p>Optimized using multithreading and depth-limited recursion for fast, large-scale directory scans.</p>
+  //       </div>
+  //     ),
+  //   },
+  // },
   {
     title: "Game Development",
     description: "Minimal, addictive gameplay loops with smooth physics and cross-platform builds.",
