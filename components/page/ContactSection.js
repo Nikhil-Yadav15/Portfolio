@@ -339,7 +339,7 @@ export default function ContactSection() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 1.0 }}
-            className="text-3xl  text-white text-center md:text-right font-pinyon-script order-3"
+            className="text-1xl italic  text-white text-center md:text-right font-lora order-3"
           >
             © Nikhil Yadav
           </motion.div>
