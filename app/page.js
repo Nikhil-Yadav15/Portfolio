@@ -3,7 +3,7 @@ import { useRef, useEffect, useState, Suspense, useCallback, useMemo } from 'rea
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
-import { Canvas, useLoader, useThree } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import { BlackHoleModel } from '@/components/scenes/BlackHoleModel';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -12,11 +12,13 @@ import Hero from '@/components/page/Hero';
 import ShaderBackground from '@/components/ui/shader-background';
 import Loader from '@/components/ui/StartingLoader';
 import { useNav } from '@/components/contexts/NavigationContext';
+import { getAllAssets } from '@/data/Assets';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger, useGSAP);
 }
 
+// Only preload blackhole model
 useGLTF.preload('/blackhole_compress.glb');
 
 export default function GlassBreakPage() {
@@ -27,7 +29,12 @@ export default function GlassBreakPage() {
   const audioRef = useRef(null);
   const blackHoleCanvasRef = useRef(null);
   const mainScrollTrigger = useRef(null);
-  const [preloadStage, setPreloadStage] = useState('gpu-warmup');
+  
+  // Asset loading states
+  const [assetLoadingStage, setAssetLoadingStage] = useState('critical-assets');
+  const [assetsProgress, setAssetsProgress] = useState(0);
+  const [loadedAssets, setLoadedAssets] = useState(0);
+  const [totalAssets, setTotalAssets] = useState(0);
   const [preloadComplete, setPreloadComplete] = useState(false);
 
   const [isHydrated, setIsHydrated] = useState(false);
@@ -38,7 +45,7 @@ export default function GlassBreakPage() {
     current: 'glass',
     transitioning: false,
     modelsLoaded: false,
-    gpuWarmedUp: false
+    assetsLoaded: false
   });
   
   const [heroMounted, setHeroMounted] = useState(false);
@@ -53,6 +60,95 @@ export default function GlassBreakPage() {
   const [soundPlayed, setSoundPlayed] = useState(false);
 
   const { currentSection, setCurrentSection, toNavigate, setToNavigate } = useNav();
+
+  // Asset preloading hook
+  const useAssetPreloader = (assets) => {
+    const [isLoading, setIsLoading] = useState(true);
+    const [progress, setProgress] = useState(0);
+    const [loadedCount, setLoadedCount] = useState(0);
+
+    useEffect(() => {
+      if (!assets || assets.length === 0) {
+        setIsLoading(false);
+        return;
+      }
+
+      let loaded = 0;
+      const total = assets.length;
+      setTotalAssets(total);
+
+      const preloadPromises = assets.map(async (asset) => {
+        return new Promise((resolve) => {
+          if (asset.type === 'image') {
+            const img = new Image();
+            img.onload = img.onerror = () => {
+              loaded++;
+              setLoadedCount(loaded);
+              setLoadedAssets(loaded);
+              setProgress((loaded / total) * 100);
+              setAssetsProgress((loaded / total) * 100);
+              resolve();
+            };
+            img.src = asset.src;
+          } 
+          else if (asset.type === 'video') {
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+            video.onloadedmetadata = video.onerror = () => {
+              loaded++;
+              setLoadedCount(loaded);
+              setLoadedAssets(loaded);
+              setProgress((loaded / total) * 100);
+              setAssetsProgress((loaded / total) * 100);
+              resolve();
+            };
+            video.src = asset.src;
+          }
+          else if (asset.type === 'model') {
+            fetch(asset.src)
+              .then(() => {
+                loaded++;
+                setLoadedCount(loaded);
+                setLoadedAssets(loaded);
+                setProgress((loaded / total) * 100);
+                setAssetsProgress((loaded / total) * 100);
+                resolve();
+              })
+              .catch(() => {
+                loaded++;
+                setLoadedCount(loaded);
+                setLoadedAssets(loaded);
+                setProgress((loaded / total) * 100);
+                setAssetsProgress((loaded / total) * 100);
+                resolve();
+              });
+          }
+          else if (asset.type === 'audio') {
+            const audio = new Audio();
+            audio.oncanplaythrough = audio.onerror = () => {
+              loaded++;
+              setLoadedCount(loaded);
+              setLoadedAssets(loaded);
+              setProgress((loaded / total) * 100);
+              setAssetsProgress((loaded / total) * 100);
+              resolve();
+            };
+            audio.src = asset.src;
+          }
+        });
+      });
+
+      Promise.all(preloadPromises).then(() => {
+        setIsLoading(false);
+      });
+    }, [assets]);
+
+    return { isLoading, progress, loadedCount, totalAssets: assets?.length || 0 };
+  };
+
+  // Use the asset preloader
+  const allAssets = getAllAssets();
+  const { isLoading: assetsLoading } = useAssetPreloader(allAssets);
 
   useEffect(() => {
     const handleUserInteraction = () => {
@@ -118,14 +214,16 @@ export default function GlassBreakPage() {
     setSceneState(prev => ({ ...prev, current: 'glass', transitioning: false }));
   }, [deleteAllFragments]);
 
+  // Asset loading instead of GPU warmup
   useEffect(() => {
     if (!isHydrated) return;
-    const warmupAlreadyDone = localStorage.getItem('warmupalreadydone') === 'true';
     
-    if (warmupAlreadyDone) {
+    const assetsAlreadyLoaded = localStorage.getItem('assetsalreadyloaded') === 'true';
+    
+    if (assetsAlreadyLoaded) {
       setSceneState(prev => ({ 
         ...prev, 
-        gpuWarmedUp: true,
+        assetsLoaded: true,
         modelsLoaded: true 
       }));
       resetAnimationStates();
@@ -135,56 +233,21 @@ export default function GlassBreakPage() {
       return;
     }
 
-    const warmupGPU = async () => {
-      const warmupCanvas = document.createElement('canvas');
-      warmupCanvas.width = 256;
-      warmupCanvas.height = 256;
-      warmupCanvas.style.position = 'absolute';
-      warmupCanvas.style.top = '-1000px';
-      document.body.appendChild(warmupCanvas);
+    // Wait for assets to load
+    if (!assetsLoading) {
+      setTimeout(() => {
+        setSceneState(prev => ({ 
+          ...prev, 
+          assetsLoaded: true,
+          modelsLoaded: true 
+        }));
+        setAssetLoadingStage('glass-break');
+        localStorage.setItem('assetsalreadyloaded', 'true');
+      }, 500);
+    }
+  }, [isHydrated, assetsLoading, resetAnimationStates]);
 
-      const warmupRenderer = new THREE.WebGLRenderer({ 
-        canvas: warmupCanvas, 
-        antialias: false 
-      });
-      const warmupScene = new THREE.Scene();
-      const warmupCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-
-      const warmupGeometry = new THREE.SphereGeometry(1, 32, 32);
-      const warmupMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0x000000,
-        metalness: 0.8,
-        roughness: 0.2
-      });
-      const warmupMesh = new THREE.Mesh(warmupGeometry, warmupMaterial);
-      warmupScene.add(warmupMesh);
-
-      warmupScene.add(new THREE.AmbientLight(0x404040, 0.5));
-      warmupScene.add(new THREE.DirectionalLight(0xffffff, 1));
-
-      for (let i = 0; i < 10; i++) {
-        warmupMesh.rotation.y += 0.1;
-        warmupRenderer.render(warmupScene, warmupCamera);
-      }
-
-      warmupGeometry.dispose();
-      warmupMaterial.dispose();
-      warmupRenderer.dispose();
-      document.body.removeChild(warmupCanvas);
-      
-      setSceneState(prev => ({ 
-        ...prev, 
-        gpuWarmedUp: true,
-        modelsLoaded: true 
-      }));
-
-      setPreloadStage('glass-break');
-    };
-
-    const warmupTimeout = setTimeout(warmupGPU, 500);
-    return () => clearTimeout(warmupTimeout);
-  }, [isHydrated, resetAnimationStates]);
-
+  // Audio setup
   useEffect(() => {
     if (!isHydrated) return;
 
@@ -209,6 +272,7 @@ export default function GlassBreakPage() {
     };
   }, [isHydrated]);
 
+  // Navigation effect
   useEffect(() => {
     if (toNavigate !== null && currentSection === "hero") {
       deleteAllFragments();
@@ -263,6 +327,7 @@ export default function GlassBreakPage() {
     { start: [25, 75], end: [0, 90], angle: 155 },
   ], []);
 
+  // Fragment generation
   useEffect(() => {
     if (!isHydrated || !heroMounted || showMainContent || fragmentsGenerated) return;
 
@@ -329,6 +394,7 @@ export default function GlassBreakPage() {
     
   }, [isHydrated, heroMounted, showMainContent, fragmentsGenerated, crackLines]);
 
+  // GSAP animations
   useGSAP(() => {
     if (toNavigate !== null && currentSection === "hero") {
       return;
@@ -400,7 +466,7 @@ export default function GlassBreakPage() {
               deleteAllFragments();
               setHeroMounted(false);
               setAutoTransitionTriggered(true);
-
+              
               setTimeout(() => {
                 if (blackHoleCanvasRef.current) {
                   blackHoleCanvasRef.current.style.display = 'none';
@@ -594,6 +660,7 @@ export default function GlassBreakPage() {
     }
   }, [showMainContent]);
 
+  // Audio Function
   const playGlassBreakSound = () => {
     if (!audioRef.current || !audioLoaded || !userInteracted) {
       return;
@@ -630,7 +697,7 @@ export default function GlassBreakPage() {
     setTimeout(() => {
       deleteAllFragments();
       setHeroMounted(false);
-
+      
       if (blackHoleCanvasRef.current) {
         blackHoleCanvasRef.current.style.display = 'none';
       }
@@ -650,7 +717,7 @@ export default function GlassBreakPage() {
         ScrollTrigger.refresh();
       }, 100);
       
-    }, 800); 
+    }, 800);
   };
 
   const generateRealisticGlassShape = (crackAngle) => {
@@ -670,21 +737,28 @@ export default function GlassBreakPage() {
     return `polygon(${points.join(', ')})`;
   };
 
-  if (!preloadComplete) {
+  // Show loading while assets are loading
+  if (!preloadComplete || assetsLoading) {
     return (
       <div className="h-[100dvh] z-41 bg-black flex items-center justify-center relative">
         <Loader />
-        {preloadStage !== 'gpu-warmup' && (
+        <div className="absolute bottom-20 text-center text-white">
+          <p className="text-lg mb-2">Loading Assets</p>
+          <p className="text-sm text-gray-400">
+            {loadedAssets}/{totalAssets} assets loaded ({assetsProgress.toFixed(1)}%)
+          </p>
+        </div>
+        {assetLoadingStage !== 'critical-assets' && (
           <div className="absolute inset-0 opacity-0 pointer-events-none">
             <PreloadSequence 
-              stage={preloadStage}
+              stage={assetLoadingStage}
               onStageComplete={(nextStage) => {
                 if (nextStage === 'complete') {
                   resetAnimationStates();
                   setHeroMounted(true);
                   setPreloadComplete(true);
                 } else {
-                  setPreloadStage(nextStage);
+                  setAssetLoadingStage(nextStage);
                 }
               }}
             />
@@ -825,6 +899,7 @@ export default function GlassBreakPage() {
   );
 }
 
+// Simplified PreloadSequence - only handles glass-break and blackhole stages
 function PreloadSequence({ stage, onStageComplete }) {
   const containerRef = useRef(null);
   const heroRef = useRef(null);
@@ -956,7 +1031,7 @@ function PreloadSequence({ stage, onStageComplete }) {
         case 'blackhole':
           setShowPreloadBlackHole(true);
           await new Promise(resolve => setTimeout(resolve, 4000));
-          localStorage.setItem('warmupalreadydone', 'true');
+          localStorage.setItem('assetsalreadyloaded', 'true');
           onStageComplete('complete');
           break;
       }
