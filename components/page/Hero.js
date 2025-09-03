@@ -48,7 +48,7 @@ const ScrollHint = () => {
         >
           <span className="  absolute inset-0 rounded-full blur-md opacity-40 group-hover:opacity-60 transition-opacity bg-gradient-to-r from-cyan-400 to-pink-400" />
           
-          <span className=" font-lora relative text-sm font-bold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-blue-300">
+          <span className="hidden md:inline font-lora relative text-sm font-bold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-blue-300">
             Scroll Down
           </span>
 
