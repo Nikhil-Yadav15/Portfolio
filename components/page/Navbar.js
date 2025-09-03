@@ -26,7 +26,7 @@ export default function DarkNavbar({
   desktopClassName = "",
   mobileClassName = "",
   logoText = "Nikhil Yadav",
-  logoClick = () => {},
+  logoClick = () => window.location.reload(),
 }) {
   const { setToNavigate, currentSection, setFromHero } = useNav();
 
@@ -239,7 +239,7 @@ const DarkNavbarDesktop = React.memo(function DarkNavbarDesktop({
             <div className="flex-1 flex items-center gap-4">
               <button
                 onClick={logoClick}
-                className="min-[900px]:text-2xl max-[800px]:text-1xl font-pinyon-script font-bold text-white hover:text-neutral-300 transition-colors cursor-pointer"
+                className="min-[900px]:text-2xl max-[800px]:text-lg font-lora font-bold text-white hover:text-neutral-300 transition-colors cursor-pointer"
               >
                 {logoText}
               </button>
