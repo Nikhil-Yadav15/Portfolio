@@ -453,7 +453,7 @@ export default function GlassBreakPage() {
     
   }, [isHydrated, heroMounted, showMainContent, fragmentsGenerated, crackLines]);
 
-  // The rest of your GSAP animations and effects remain the same...
+  // COMPLETE GSAP TIMELINE - This was missing in my previous response
   useGSAP(() => {
     if (toNavigate !== null && currentSection === "hero") {
       return;
@@ -520,12 +520,14 @@ export default function GlassBreakPage() {
             setStartBlackHoleAutoScale(true);
           }
 
+          // Direct transition to main content
           if (!showMainContent && !autoTransitionTriggered) {
             if (currentProgress >= 0.88) {
               deleteAllFragments();
               setHeroMounted(false);
               setAutoTransitionTriggered(true);
               
+              // Direct transition to main content with delay
               setTimeout(() => {
                 if (blackHoleCanvasRef.current) {
                   blackHoleCanvasRef.current.style.display = 'none';
@@ -540,7 +542,7 @@ export default function GlassBreakPage() {
                 setTimeout(() => {
                   ScrollTrigger.refresh();
                 }, 100);
-              }, 800);
+              }, 800); // Allow black hole to complete its animation
             }
           }
 
@@ -560,7 +562,112 @@ export default function GlassBreakPage() {
 
     mainScrollTrigger.current = masterTimeline.scrollTrigger;
     
-    // ... rest of your GSAP timeline code remains the same
+    masterTimeline
+      .to(crackOverlayRef.current, {
+        opacity: 1,
+        duration: 0.12,
+        ease: "power2.inOut"
+      }, 0.05)
+      .to(contentRef.current, {
+        scale: 1.01,
+        filter: "blur(0.5px)",
+        duration: 0.08,
+        ease: "power2.inOut"
+      }, 0.1);
+
+    masterTimeline
+      .to(crackOverlayRef.current, {
+        opacity: 0,
+        duration: 0.03,
+        ease: "power2.out"
+      }, 0.2)
+      .to(contentRef.current, {
+        opacity: 0,
+        scale: 1.03,
+        filter: "blur(3px)",
+        duration: 0.05,
+        ease: "power3.inOut"
+      }, 0.2);
+
+    const fragmentsByLine = {};
+    contentFragments.forEach(fragment => {
+      if (!fragmentsByLine[fragment.crackIndex]) {
+        fragmentsByLine[fragment.crackIndex] = [];
+      }
+      fragmentsByLine[fragment.crackIndex].push(fragment);
+    });
+
+    contentFragments.forEach((fragmentData) => {
+      const fragmentElement = fragmentsRef.current[fragmentData.id];
+      if (fragmentElement) {
+        gsap.set(fragmentElement, {
+          x: fragmentData.initialX,
+          y: fragmentData.initialY,
+          rotation: fragmentData.rotation,
+          transformOrigin: "center center",
+          willChange: "transform, opacity",
+          scale: 1.1,
+          opacity: 0
+        });
+      }
+    });
+
+    Object.keys(fragmentsByLine).forEach((lineIndex, groupIndex) => {
+      const lineFragments = fragmentsByLine[lineIndex];
+      
+      lineFragments.forEach((fragmentData) => {
+        const fragmentElement = fragmentsRef.current[fragmentData.id];
+        if (!fragmentElement) return;
+
+        const appearDelay = 0.2 + (groupIndex * 0.004) + (fragmentData.lineProgress * 0.008);
+        
+        masterTimeline.to(fragmentElement, {
+          opacity: 1,
+          scale: 1,
+          duration: 0.02,
+          ease: "back.out(2)",
+        }, appearDelay);
+      });
+    });
+
+    contentFragments.forEach((fragmentData) => {
+      const fragmentElement = fragmentsRef.current[fragmentData.id];
+      if (!fragmentElement) return;
+
+      const moveStartTime = 0.3 + (fragmentData.lineProgress * 0.08);
+      
+      masterTimeline.to(fragmentElement, {
+        x: fragmentData.finalX,
+        y: fragmentData.finalY,
+        rotation: fragmentData.finalRotation,
+        scale: 0.1,
+        duration: 0.2,
+        ease: "power2.inOut",
+      }, moveStartTime);
+    });
+
+    const existingFragments = fragmentsRef.current.filter(el => el !== null && el !== undefined);
+    
+    if (existingFragments.length > 0) {
+      masterTimeline.to(existingFragments, {
+        opacity: 0,
+        scale: 0.02,
+        duration: 0.1,
+        ease: "power3.in",
+        stagger: {
+          amount: 0.05,
+          from: "center"
+        }
+      }, 0.6);
+    }
+
+    if (blackHoleCanvasRef.current) {
+      masterTimeline.to(blackHoleCanvasRef.current, {
+        opacity: 1,
+        duration: 0.05,
+        ease: "power2.out"
+      }, 0.3);
+    }
 
     return () => {
       try {
@@ -598,8 +705,23 @@ export default function GlassBreakPage() {
     revertOnUpdate: true
   });
 
-  // ... rest of your effects and functions remain the same
+  useEffect(() => {
+    if (showMainContent && mainScrollTrigger.current) {
+      mainScrollTrigger.current.kill();
+      
+      gsap.set(containerRef.current, {
+        position: 'relative',
+        height: 'auto',
+        overflow: 'visible'
+      });
+      
+      gsap.set(document.body, {
+        overflow: 'auto'
+      });
+    }
+  }, [showMainContent]);
 
+  // Audio Function
   const playGlassBreakSound = () => {
     if (!audioRef.current || !audioLoaded || !userInteracted) {
       return;
@@ -607,6 +729,7 @@ export default function GlassBreakPage() {
 
     try {
       audioRef.current.currentTime = 0;
+      
       const playPromise = audioRef.current.play();
       
       if (playPromise !== undefined) {
@@ -752,17 +875,15 @@ export default function GlassBreakPage() {
                   background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.15) 100%)',
                 }}
               >
-                <Image
-                  src="/crack.png"
-                  alt="Glass crack texture"
-                  fill
-                  sizes="100vw"
+                <div
+                  className="absolute inset-0"
                   style={{
+                    backgroundImage: 'url(/crack.png)',
+                    backgroundSize: '100vw 100vh',
                     backgroundPosition: fragment.backgroundPosition,
+                    backgroundRepeat: 'no-repeat',
                     transform: 'scale(0.95)',
-                    objectFit: 'cover',
                   }}
-                  priority={false}
                 />
                 
                 <div 
@@ -833,11 +954,8 @@ export default function GlassBreakPage() {
   );
 }
 
-// ... PreloadSequence and EnhancedGlassCrackOverlay components remain the same
-
-
-// CHANGED: Simplified PreloadSequence - removed spacedrive stage
-function PreloadSequence({ stage, onStageComplete }) {
+// Updated PreloadSequence Component
+function PreloadSequence({ stage, progress, onStageComplete }) {
   const containerRef = useRef(null);
   const heroRef = useRef(null);
   const crackOverlayRef = useRef(null);
@@ -866,6 +984,7 @@ function PreloadSequence({ stage, onStageComplete }) {
           { start: [50, 50], end: [50, 100], angle: 90 },
         ];
 
+        // Fragment generation code...
         crackLines.forEach((crack, crackIndex) => {
           const fragmentsPerLine = 3;
           
@@ -968,8 +1087,7 @@ function PreloadSequence({ stage, onStageComplete }) {
         case 'blackhole':
           setShowPreloadBlackHole(true);
           await new Promise(resolve => setTimeout(resolve, 4000));
-          // CHANGED: Skip spacedrive, go directly to complete
-          localStorage.setItem('warmupalreadydone', 'true');
+          localStorage.setItem('assetspreloaded', 'true');
           onStageComplete('complete');
           break;
       }
@@ -983,7 +1101,7 @@ function PreloadSequence({ stage, onStageComplete }) {
       try {
         gsap.killTweensOf("*");
       } catch (error) {
-        console.warn(error);
+        console.warn('Animation cleanup error:', error);
       }
       
       if (fragmentsRef.current) {
@@ -992,7 +1110,7 @@ function PreloadSequence({ stage, onStageComplete }) {
             try {
               fragment.parentNode.removeChild(fragment);
             } catch (error) {
-              console.warn(error);
+              console.warn('Fragment cleanup error:', error);
             }
           }
         });
@@ -1080,7 +1198,6 @@ function PreloadSequence({ stage, onStageComplete }) {
         </>
       )}
 
-      {/* CHANGED: Only blackhole preload, no spacedrive */}
       {showPreloadBlackHole && (
         <div ref={blackHoleCanvasRef} className="absolute inset-0 z-50">
           <Canvas
