@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, lazy, Suspense } from "react";
-import BlurText from "@/components/ui/BlurText";
+import { TextAnimate } from "@/components/ui/text-animate";
 import DecryptedText from '@/components/ui/DecryptedText';
 import { VideoText } from '@/components/ui/VideoTextMask';
 import {TextRevealCard} from "@/components/ui/text-reveal-card";
@@ -67,26 +67,12 @@ const About = () => {
           animate={isVisible ? "visible" : "hidden"}
         >
           <motion.div variants={fadeInVariants}>
-            <BlurText
-              text="About Me"
-              delay={150}
-              animateBy="chars"
-              direction="top"
-              forceStart={forceTextAnimation}
-              className="cursor-pointer font-lora text-6xl md:text-7xl lg:text-8xl font-bold flex justify-center text-blue-100"
-            />
+            <TextAnimate animation="blurInUp"  delay={1} className={"cursor-text font-lora text-6xl md:text-7xl lg:text-8xl font-bold flex justify-center text-blue-100"} by="character">  About Me</TextAnimate>
           </motion.div>
 
           <motion.div className="space-y-4" variants={fadeInVariants}>
             <motion.div variants={fadeInVariants}>
-              <BlurText
-                text="I am"
-                delay={150}
-                forceStart={forceTextAnimation}
-                animateBy="chars"
-                direction="top"
-                className="cursor-pointer font-lora text-2xl md:text-3xl text-purple-200 font-light flex justify-center"
-              />
+              <TextAnimate animation="blurInUp"  delay={1} className={"cursor-text font-lora text-2xl md:text-3xl text-purple-200 font-light flex justify-center"} by="character">  I am</TextAnimate>
             </motion.div>
             
             <div className="space-y-3">
