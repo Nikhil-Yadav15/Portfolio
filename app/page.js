@@ -5,7 +5,6 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { Canvas, useLoader, useThree } from '@react-three/fiber';
 import { BlackHoleModel } from '@/components/scenes/BlackHoleModel';
-import { SpacedriveModel } from '@/components/scenes/SpacedriveModel';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import MainContent from '@/components/page/MainContent';
@@ -19,7 +18,6 @@ if (typeof window !== 'undefined') {
 }
 
 useGLTF.preload('/blackhole_compress.glb');
-useGLTF.preload('/spacedrive_fab_compress.glb');
 
 export default function GlassBreakPage() {
   const containerRef = useRef(null);
@@ -48,7 +46,6 @@ export default function GlassBreakPage() {
   const [fragmentsGenerated, setFragmentsGenerated] = useState(false);
   const [showBlackHole, setShowBlackHole] = useState(false);
   const [startBlackHoleAutoScale, setStartBlackHoleAutoScale] = useState(false);
-  const [showSpacedrive, setShowSpacedrive] = useState(false);
   const [showMainContent, setShowMainContent] = useState(false);
   const [isMainContentActive, setIsMainContentActive] = useState(false);
   const [blackHoleCompleted, setBlackHoleCompleted] = useState(false);
@@ -88,7 +85,6 @@ export default function GlassBreakPage() {
   }, []);
 
   const deleteAllFragments = useCallback(() => {
-    
     fragmentsRef.current.forEach((fragmentEl, index) => {
       if (fragmentEl && fragmentEl.parentNode) {
         try {
@@ -108,12 +104,11 @@ export default function GlassBreakPage() {
     fragmentsRef.current = [];
     setContentFragments([]);
     setFragmentsGenerated(false);
-
   }, []);
+
   const resetAnimationStates = useCallback(() => {
     setShowBlackHole(false);
     setStartBlackHoleAutoScale(false);
-    setShowSpacedrive(false);
     setShowMainContent(false);
     setIsMainContentActive(false);
     setBlackHoleCompleted(false);
@@ -122,71 +117,73 @@ export default function GlassBreakPage() {
     deleteAllFragments();
     setSceneState(prev => ({ ...prev, current: 'glass', transitioning: false }));
   }, [deleteAllFragments]);
-useEffect(() => {
-  if (!isHydrated) return;
-  const warmupAlreadyDone = localStorage.getItem('warmupalreadydone') === 'true';
-  
-  if (warmupAlreadyDone) {
-    setSceneState(prev => ({ 
-      ...prev, 
-      gpuWarmedUp: true,
-      modelsLoaded: true 
-    }));
-    resetAnimationStates();
-    setHeroMounted(true);
-    setPreloadComplete(true);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    const warmupAlreadyDone = localStorage.getItem('warmupalreadydone') === 'true';
     
-    return;
-  }
-  const warmupGPU = async () => {
-    const warmupCanvas = document.createElement('canvas');
-    warmupCanvas.width = 256;
-    warmupCanvas.height = 256;
-    warmupCanvas.style.position = 'absolute';
-    warmupCanvas.style.top = '-1000px';
-    document.body.appendChild(warmupCanvas);
-
-    const warmupRenderer = new THREE.WebGLRenderer({ 
-      canvas: warmupCanvas, 
-      antialias: false 
-    });
-    const warmupScene = new THREE.Scene();
-    const warmupCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-
-    const warmupGeometry = new THREE.SphereGeometry(1, 32, 32);
-    const warmupMaterial = new THREE.MeshStandardMaterial({ 
-      color: 0x000000,
-      metalness: 0.8,
-      roughness: 0.2
-    });
-    const warmupMesh = new THREE.Mesh(warmupGeometry, warmupMaterial);
-    warmupScene.add(warmupMesh);
-
-    warmupScene.add(new THREE.AmbientLight(0x404040, 0.5));
-    warmupScene.add(new THREE.DirectionalLight(0xffffff, 1));
-
-    for (let i = 0; i < 10; i++) {
-      warmupMesh.rotation.y += 0.1;
-      warmupRenderer.render(warmupScene, warmupCamera);
+    if (warmupAlreadyDone) {
+      setSceneState(prev => ({ 
+        ...prev, 
+        gpuWarmedUp: true,
+        modelsLoaded: true 
+      }));
+      resetAnimationStates();
+      setHeroMounted(true);
+      setPreloadComplete(true);
+      
+      return;
     }
 
-    warmupGeometry.dispose();
-    warmupMaterial.dispose();
-    warmupRenderer.dispose();
-    document.body.removeChild(warmupCanvas);
-    
-    setSceneState(prev => ({ 
-      ...prev, 
-      gpuWarmedUp: true,
-      modelsLoaded: true 
-    }));
+    const warmupGPU = async () => {
+      const warmupCanvas = document.createElement('canvas');
+      warmupCanvas.width = 256;
+      warmupCanvas.height = 256;
+      warmupCanvas.style.position = 'absolute';
+      warmupCanvas.style.top = '-1000px';
+      document.body.appendChild(warmupCanvas);
 
-    setPreloadStage('glass-break');
-  };
+      const warmupRenderer = new THREE.WebGLRenderer({ 
+        canvas: warmupCanvas, 
+        antialias: false 
+      });
+      const warmupScene = new THREE.Scene();
+      const warmupCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
 
-  const warmupTimeout = setTimeout(warmupGPU, 500);
-  return () => clearTimeout(warmupTimeout);
-}, [isHydrated, resetAnimationStates]);
+      const warmupGeometry = new THREE.SphereGeometry(1, 32, 32);
+      const warmupMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x000000,
+        metalness: 0.8,
+        roughness: 0.2
+      });
+      const warmupMesh = new THREE.Mesh(warmupGeometry, warmupMaterial);
+      warmupScene.add(warmupMesh);
+
+      warmupScene.add(new THREE.AmbientLight(0x404040, 0.5));
+      warmupScene.add(new THREE.DirectionalLight(0xffffff, 1));
+
+      for (let i = 0; i < 10; i++) {
+        warmupMesh.rotation.y += 0.1;
+        warmupRenderer.render(warmupScene, warmupCamera);
+      }
+
+      warmupGeometry.dispose();
+      warmupMaterial.dispose();
+      warmupRenderer.dispose();
+      document.body.removeChild(warmupCanvas);
+      
+      setSceneState(prev => ({ 
+        ...prev, 
+        gpuWarmedUp: true,
+        modelsLoaded: true 
+      }));
+
+      setPreloadStage('glass-break');
+    };
+
+    const warmupTimeout = setTimeout(warmupGPU, 500);
+    return () => clearTimeout(warmupTimeout);
+  }, [isHydrated, resetAnimationStates]);
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -214,7 +211,6 @@ useEffect(() => {
 
   useEffect(() => {
     if (toNavigate !== null && currentSection === "hero") {
-      
       deleteAllFragments();
       setHeroMounted(false);
       
@@ -250,7 +246,7 @@ useEffect(() => {
         ScrollTrigger.refresh();
       }, 100);
     }
-  }, [toNavigate, currentSection, setCurrentSection, setToNavigate]);
+  }, [toNavigate, currentSection, setCurrentSection, setToNavigate, resetAnimationStates, deleteAllFragments]);
 
   const crackLines = useMemo(() => [
     { start: [50, 50], end: [0, 0], angle: -135 },
@@ -268,7 +264,7 @@ useEffect(() => {
   ], []);
 
   useEffect(() => {
-    if (!isHydrated || !heroMounted || showSpacedrive || showMainContent || fragmentsGenerated) return;
+    if (!isHydrated || !heroMounted || showMainContent || fragmentsGenerated) return;
 
     const generateContentFragments = () => {
       const centerX = window.innerWidth / 2 - 5;
@@ -331,7 +327,7 @@ useEffect(() => {
 
     generateContentFragments();
     
-  }, [isHydrated, heroMounted, showSpacedrive, showMainContent, fragmentsGenerated, crackLines]);
+  }, [isHydrated, heroMounted, showMainContent, fragmentsGenerated, crackLines]);
 
   useGSAP(() => {
     if (toNavigate !== null && currentSection === "hero") {
@@ -394,17 +390,32 @@ useEffect(() => {
               gsap.set(blackHoleCanvasRef.current, { opacity: 1 });
             }
           }
+
           if (currentProgress >= 0.7 && !startBlackHoleAutoScale) {
             setStartBlackHoleAutoScale(true);
           }
-          if (!showSpacedrive && !autoTransitionTriggered) {
+
+          if (!showMainContent && !autoTransitionTriggered) {
             if (currentProgress >= 0.88) {
-              
               deleteAllFragments();
               setHeroMounted(false);
-              
-              setShowSpacedrive(true);
-              setSceneState(prev => ({ ...prev, current: 'spacedrive', transitioning: true }));
+              setAutoTransitionTriggered(true);
+
+              setTimeout(() => {
+                if (blackHoleCanvasRef.current) {
+                  blackHoleCanvasRef.current.style.display = 'none';
+                }
+                
+                setSceneState(prev => ({ ...prev, current: 'mainContent' }));
+                window.scrollTo(0, 0);
+                setShowBlackHole(false);
+                setShowMainContent(true);
+                setIsMainContentActive(true);
+                
+                setTimeout(() => {
+                  ScrollTrigger.refresh();
+                }, 100);
+              }, 800);
             }
           }
 
@@ -412,7 +423,6 @@ useEffect(() => {
             setSoundPlayed(false);
             setShowBlackHole(false);
             setStartBlackHoleAutoScale(false);
-            setShowSpacedrive(false);
             setBlackHoleCompleted(false);
             setAutoTransitionTriggered(false);
             setSceneState(prev => ({ ...prev, current: 'glass', transitioning: false }));
@@ -451,6 +461,7 @@ useEffect(() => {
         duration: 0.05,
         ease: "power3.inOut"
       }, 0.2);
+
     const fragmentsByLine = {};
     contentFragments.forEach(fragment => {
       if (!fragmentsByLine[fragment.crackIndex]) {
@@ -583,7 +594,6 @@ useEffect(() => {
     }
   }, [showMainContent]);
 
-  // Audio Function
   const playGlassBreakSound = () => {
     if (!audioRef.current || !audioLoaded || !userInteracted) {
       return;
@@ -608,25 +618,7 @@ useEffect(() => {
     }
   };
 
-  const handleSpacedriveComplete = () => {
-    if (blackHoleCanvasRef.current) {
-      blackHoleCanvasRef.current.style.display = 'none';
-    }
-    
-    setSceneState(prev => ({ ...prev, current: 'mainContent' }));
-    window.scrollTo(0, 0);
-    setShowBlackHole(false);
-    setShowSpacedrive(false);
-    setShowMainContent(true);
-    setIsMainContentActive(true);
-    
-    setTimeout(() => {
-      ScrollTrigger.refresh();
-    }, 100);
-  };
-
   const handleBlackHoleEngulf = () => {
-    
     setBlackHoleCompleted(true);
     
     if (autoTransitionTriggered) {
@@ -636,18 +628,29 @@ useEffect(() => {
     setAutoTransitionTriggered(true);
     
     setTimeout(() => {
-      
       deleteAllFragments();
       setHeroMounted(false);
+
+      if (blackHoleCanvasRef.current) {
+        blackHoleCanvasRef.current.style.display = 'none';
+      }
       
-      setShowSpacedrive(true);
       setSceneState(prev => ({ 
         ...prev, 
-        current: 'spacedrive', 
-        transitioning: true 
+        current: 'mainContent', 
+        transitioning: false 
       }));
       
-    }, 200);
+      window.scrollTo(0, 0);
+      setShowBlackHole(false);
+      setShowMainContent(true);
+      setIsMainContentActive(true);
+      
+      setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 100);
+      
+    }, 800); 
   };
 
   const generateRealisticGlassShape = (crackAngle) => {
@@ -666,11 +669,11 @@ useEffect(() => {
     
     return `polygon(${points.join(', ')})`;
   };
+
   if (!preloadComplete) {
     return (
       <div className="h-[100dvh] z-41 bg-black flex items-center justify-center relative">
         <Loader />
-
         {preloadStage !== 'gpu-warmup' && (
           <div className="absolute inset-0 opacity-0 pointer-events-none">
             <PreloadSequence 
@@ -773,7 +776,7 @@ useEffect(() => {
         </div>
       )}
 
-      {(showBlackHole || showSpacedrive) && !showMainContent && (
+      {showBlackHole && !showMainContent && (
         <div 
           ref={blackHoleCanvasRef}
           className="absolute inset-0 z-50"
@@ -796,34 +799,18 @@ useEffect(() => {
             dpr={Math.min(window.devicePixelRatio, 2)}
           >
             <Suspense fallback={null}>
-              {showSpacedrive && <SceneBackground />}
-              
               <ambientLight intensity={0.8} />
               <directionalLight position={[5, 5, 5]} intensity={2} />
               <pointLight position={[0, 0, -2]} intensity={3} color="#4a90ff" distance={20} />
+              <pointLight position={[3, 0, 0]} intensity={1.5} color="#ffffff" />
+              <pointLight position={[-3, 0, 0]} intensity={1.5} color="#ffffff" />
+              <pointLight position={[0, 3, 0]} intensity={1.5} color="#ffffff" />
               
-              {showBlackHole && !showSpacedrive && (
-                <>
-                  <pointLight position={[3, 0, 0]} intensity={1.5} color="#ffffff" />
-                  <pointLight position={[-3, 0, 0]} intensity={1.5} color="#ffffff" />
-                  <pointLight position={[0, 3, 0]} intensity={1.5} color="#ffffff" />
-                </>
-              )}
-              
-              {showBlackHole && !showSpacedrive && (
-                <BlackHoleModel 
-                  position={[0, -1, -8]}
-                  startAutoScale={startBlackHoleAutoScale}
-                  onEngulfComplete={handleBlackHoleEngulf}
-                />
-              )}
-              
-              {showSpacedrive && !showMainContent && (
-                <SpacedriveModel 
-                  position={[0, 0, 0]}
-                  onFlashComplete={handleSpacedriveComplete}
-                />
-              )}
+              <BlackHoleModel 
+                position={[0, -1, -8]}
+                startAutoScale={startBlackHoleAutoScale}
+                onEngulfComplete={handleBlackHoleEngulf}
+              />
             </Suspense>
           </Canvas>
         </div>
@@ -847,7 +834,6 @@ function PreloadSequence({ stage, onStageComplete }) {
   
   const [preloadFragments, setPreloadFragments] = useState([]);
   const [showPreloadBlackHole, setShowPreloadBlackHole] = useState(false);
-  const [showPreloadSpacedrive, setShowPreloadSpacedrive] = useState(false);
 
   useEffect(() => {
     if (stage === 'glass-break' && preloadFragments.length === 0) {
@@ -970,13 +956,6 @@ function PreloadSequence({ stage, onStageComplete }) {
         case 'blackhole':
           setShowPreloadBlackHole(true);
           await new Promise(resolve => setTimeout(resolve, 4000));
-          onStageComplete('spacedrive');
-          break;
-
-        case 'spacedrive':
-          setShowPreloadBlackHole(false);
-          setShowPreloadSpacedrive(true);
-          await new Promise(resolve => setTimeout(resolve, 3000));
           localStorage.setItem('warmupalreadydone', 'true');
           onStageComplete('complete');
           break;
@@ -1088,7 +1067,7 @@ function PreloadSequence({ stage, onStageComplete }) {
         </>
       )}
 
-      {(showPreloadBlackHole || showPreloadSpacedrive) && (
+      {showPreloadBlackHole && (
         <div ref={blackHoleCanvasRef} className="absolute inset-0 z-50">
           <Canvas
             camera={{ 
@@ -1107,29 +1086,17 @@ function PreloadSequence({ stage, onStageComplete }) {
             dpr={Math.min(window.devicePixelRatio, 2)}
           >
             <Suspense fallback={null}>
-              {showPreloadSpacedrive && <SceneBackground />}
-              
               <ambientLight intensity={0.8} />
               <directionalLight position={[5, 5, 5]} intensity={2} />
               <pointLight position={[0, 0, -2]} intensity={3} color="#4a90ff" distance={20} />
+              <pointLight position={[3, 0, 0]} intensity={1.5} color="#ffffff" />
+              <pointLight position={[-3, 0, 0]} intensity={1.5} color="#ffffff" />
+              <pointLight position={[0, 3, 0]} intensity={1.5} color="#ffffff" />
               
-              {showPreloadBlackHole && (
-                <>
-                  <pointLight position={[3, 0, 0]} intensity={1.5} color="#ffffff" />
-                  <pointLight position={[-3, 0, 0]} intensity={1.5} color="#ffffff" />
-                  <pointLight position={[0, 3, 0]} intensity={1.5} color="#ffffff" />
-                  <BlackHoleModel 
-                    position={[0, -1, -8]}
-                    startAutoScale={true}
-                  />
-                </>
-              )}
-              
-              {showPreloadSpacedrive && (
-                <SpacedriveModel 
-                  position={[0, 0, 0]}
-                />
-              )}
+              <BlackHoleModel 
+                position={[0, -1, -8]}
+                startAutoScale={true}
+              />
             </Suspense>
           </Canvas>
         </div>
@@ -1187,14 +1154,3 @@ const EnhancedGlassCrackOverlay = ({ ref }) => (
     </svg>
   </div>
 );
-
-function SceneBackground() {
-  const texture = useLoader(THREE.TextureLoader, '/gemini.png')
-  const { scene } = useThree()
-  useEffect(() => {
-    texture.mapping = THREE.EquirectangularReflectionMapping
-    scene.background = texture
-    scene.environment = texture
-  }, [scene, texture])
-  return null
-}
