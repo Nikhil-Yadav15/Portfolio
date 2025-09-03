@@ -5,7 +5,7 @@ import * as z from "zod";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { FaGithub, FaLinkedin, FaDiscord } from "react-icons/fa";
-import BlurText from "@/components/ui/BlurText";
+import { TextAnimate } from "@/components/ui/text-animate";
 import {NeonSpotlightCard} from "@/components/ui/NeonSpotlightCard";
 import { TypewriterEffect } from "@/components/ui/TypewriterEffect";
 
@@ -66,13 +66,7 @@ export default function ContactSection() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="text-center mb-8 md:mb-12"
         >
-          <BlurText
-                  text="Get in Touch"
-                  delay={110}
-                  animateBy="chars"
-                  direction="top"
-                  className="cursor-pointer font-lora text-4xl md:text-5xl lg:text-6xl font-bold  mb-4 flex justify-center text-blue-100"
-                />
+          <TextAnimate animation="blurInUp"  delay={1} className={"cursor-text font-lora text-4xl md:text-5xl lg:text-6xl font-bold  mb-4 flex justify-center text-blue-100"} by="character">  Get in Touch</TextAnimate>
         </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
