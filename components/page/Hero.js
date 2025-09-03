@@ -1,7 +1,9 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import BlurText from '@/components/ui/BlurText-noHover';
+
+import { TextAnimate } from "@/components/ui/text-animate";
+
 import GradientText from '@/components/ui/GradientText';
 import RotatingText from '@/components/ui/RotatingText';
 import { Canvas, useFrame } from '@react-three/fiber'
@@ -9,6 +11,7 @@ import { OrbitControls, useGLTF, useAnimations } from '@react-three/drei'
 
 import { useNav } from '@/components/contexts/NavigationContext';
 import { ChevronDown } from 'lucide-react';
+
 
 import { gsap } from "gsap";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
@@ -267,13 +270,9 @@ const HeroSection = () => {
                   className="text-gray-300 font-light"
                   variants={greetingVariants}
                 >
-                  <BlurText
-                  text="Hi, I am"
-                  delay={150}
-                  animateBy="chars"
-                  direction="top"
-                  className="text-4xl font-lora"
-                />
+                  <TextAnimate animation="blurInUp" delay={1} className={"text-4xl font-lora"} by="character">
+                    Hi, I am
+                  </TextAnimate>
                 </motion.span>
                 <motion.span 
                   className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent font-bold"
@@ -296,71 +295,30 @@ const HeroSection = () => {
               variants={developerVariants}
             >
               <div className="text-gray-300 text-2xl font-medium leading-relaxed">
-                  <BlurText
-                    as="span"
-                    text="I am "
-                    delay={150}
-                    animateBy="words"
-                    direction="top"
-                    className="text-gray-300 font-lora"
-                  />
-                  <BlurText
-                  as="span"
-                  text="Full Stack Developer"
-                  delay={150}
-                  animateBy="chars"
-                  direction="top"
-                  className="font-semibold font-lora"
-                  gradientClass="bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent"
-                />
-                  <BlurText
-                    as="span"
-                    text=" | Advancing in "
-                    delay={170}
-                    animateBy="chars"
-                    direction="top"
-                    className="text-gray-300 font-lora"
-                  />
-                  <BlurText
-                    as="span"
-                    text="Machine Learning"
-                    delay={170}
-                    animateBy="chars"
-                    direction="top"
-                    gradientClass="font-lora bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent font-semibold"
-                  />
-                  <BlurText
-                    as="span"
-                    text=" | Strengthening "
-                    delay={180}
-                    animateBy="chars"
-                    direction="top"
-                    className="text-gray-300 font-lora"
-                  />
-                  <BlurText
-                    as="span"
-                    text="DSA"
-                    delay={180}
-                    animateBy="chars"
-                    direction="top"
-                    gradientClass="font-lora bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent font-semibold"
-                  />
-                  <BlurText
-                    as="span"
-                    text=" | Targeting "
-                    delay={190}
-                    animateBy="chars"
-                    direction="top"
-                    className="text-gray-300 font-lora"
-                  />
-                  <BlurText
-                    as="span"
-                    text="AI/ML specialization"
-                    delay={185}
-                    animateBy="chars"
-                    direction="top"
-                    gradientClass=" font-lora bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent font-semibold"
-                  />
+                  <TextAnimate animation="blurInUp" as='span' delay={1} className={"text-gray-300 font-lora"} by="character">
+                  I am 
+                  </TextAnimate>
+                  <TextAnimate segmentClassName={"font-semibold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent"} animation="blurInUp" as='span' delay={1} className={" font-lora"} by="character">
+                     {" Full Stack Developer"}
+                </TextAnimate>
+                  <TextAnimate animation="blurInUp" as='span' delay={1} className={"text-gray-300 font-lora"} by="character">
+                  {" | Advancing in "}
+                  </TextAnimate>
+                  <TextAnimate segmentClassName={"bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent font-semibold"} animation="blurInUp" as='span' delay={1} className={" font-lora"} by="character">
+                     {" Machine Learning"}
+                </TextAnimate>
+                  <TextAnimate animation="blurInUp" as='span' delay={1} className={"text-gray-300 font-lora"} by="words">
+                  {" | Strengthening "}
+                  </TextAnimate>
+                  <TextAnimate segmentClassName={"font-semibold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent"} animation="blurInUp" as='span' delay={1} className={" font-lora"} by="character">
+                     {" DSA"}
+                </TextAnimate>
+                  <TextAnimate animation="blurInUp" as='span' delay={1} className={"text-gray-300 font-lora"} by="character">
+                  {" | Targeting "}
+                  </TextAnimate>
+                  <TextAnimate segmentClassName={"font-semibold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent"} animation="blurInUp" as='span' delay={1} className={" font-lora"} by="character">
+                     {" AI/ML specialization"}
+                </TextAnimate>
                 </div>
 
             </motion.div>
@@ -370,13 +328,9 @@ const HeroSection = () => {
               variants={interestSectionVariants}
             >
               <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-3 text-2xl lg:text-3xl">
-                <span className="text-gray-400"><BlurText
-                                                          text="I am interested in"
-                                                          delay={110}
-                                                          animateBy="chars"
-                                                          direction="top"
-                                                          className="text-2xl font-lora"
-                                                        /></span>
+                <TextAnimate animation="blurInUp" as='span' delay={1} className={"text-gray-400 text-2xl font-lora"} by="character">
+                  {"My interests"}
+                  </TextAnimate>
                 <div className="h-12 flex items-center">
                   <motion.span 
                   className="text-gray-300 font-light"
@@ -454,14 +408,9 @@ const HeroSection = () => {
               className="text-gray-300 text-lg font-light"
               variants={greetingVariants}
             >
-              <BlurText
-                  text="Hi, I am"
-                  delay={150}
-                  animateBy="chars"
-                  direction="top"
-
-                  className="text-4xl "
-                />
+              <TextAnimate animation="blurInUp" delay={1} className={"text-4xl font-lora"} by="character">
+                    Hi, I am
+                  </TextAnimate>
             </motion.span>
             <motion.span 
               className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent text-3xl font-bold"
@@ -471,7 +420,7 @@ const HeroSection = () => {
                     colors={["#40ffaa", "#4079ff", "#40ffaa", "#4079ff", "#40ffaa"]}
                     animationSpeed={3}
                     showBorder={false}
-                    className="custom-class"
+                    className="custom-class font-lora"
                   >
                     Nikhil Yadav  
                   </GradientText>
@@ -483,71 +432,30 @@ const HeroSection = () => {
             variants={developerVariants}
           >
             <div className="text-gray-300 text-md font-medium leading-relaxed">
-                  <BlurText
-                    as="span"
-                    text="I am "
-                    delay={150}
-                    animateBy="words"
-                    direction="top"
-                    className="text-gray-300"
-                  />
-                  <BlurText
-                  as="span"
-                  text="Full Stack Developer"
-                  delay={150}
-                  animateBy="chars"
-                  direction="top"
-                  className="font-semibold"
-                  gradientClass="bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent"
-                />
-                  <BlurText
-                    as="span"
-                    text=" | Advancing in "
-                    delay={170}
-                    animateBy="chars"
-                    direction="top"
-                    className="text-gray-300"
-                  />
-                  <BlurText
-                    as="span"
-                    text="Machine Learning"
-                    delay={170}
-                    animateBy="chars"
-                    direction="top"
-                    gradientClass="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent font-semibold"
-                  />
-                  <BlurText
-                    as="span"
-                    text=" | Strengthening "
-                    delay={180}
-                    animateBy="chars"
-                    direction="top"
-                    className="text-gray-300"
-                  />
-                  <BlurText
-                    as="span"
-                    text="DSA"
-                    delay={180}
-                    animateBy="chars"
-                    direction="top"
-                    gradientClass="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent font-semibold"
-                  />
-                  <BlurText
-                    as="span"
-                    text=" | Targeting "
-                    delay={190}
-                    animateBy="chars"
-                    direction="top"
-                    className="text-gray-300"
-                  />
-                  <BlurText
-                    as="span"
-                    text="AI/ML specialization"
-                    delay={185}
-                    animateBy="chars"
-                    direction="top"
-                    gradientClass="bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent font-semibold"
-                  />
+                  <TextAnimate animation="blurInUp" as='span' delay={1} className={"text-gray-300 font-lora"} by="character">
+                  I am 
+                  </TextAnimate>
+                  <TextAnimate segmentClassName={"font-semibold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent"} animation="blurInUp" as='span' delay={1} className={" font-lora"} by="character">
+                     {" Full Stack Developer"}
+                </TextAnimate>
+                  <TextAnimate animation="blurInUp" as='span' delay={1} className={"text-gray-300 font-lora"} by="character">
+                  {" | Advancing in "}
+                  </TextAnimate>
+                  <TextAnimate segmentClassName={"bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent font-semibold"} animation="blurInUp" as='span' delay={1} className={" font-lora"} by="character">
+                     {" Machine Learning"}
+                </TextAnimate>
+                  <TextAnimate animation="blurInUp" as='span' delay={1} className={"text-gray-300 font-lora"} by="words">
+                  {" | Strengthening "}
+                  </TextAnimate>
+                  <TextAnimate segmentClassName={"font-semibold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent"} animation="blurInUp" as='span' delay={1} className={" font-lora"} by="character">
+                     {" DSA"}
+                </TextAnimate>
+                  <TextAnimate animation="blurInUp" as='span' delay={1} className={"text-gray-300 font-lora"} by="character">
+                  {" | Targeting "}
+                  </TextAnimate>
+                  <TextAnimate segmentClassName={"font-semibold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent"} animation="blurInUp" as='span' delay={1} className={" font-lora"} by="character">
+                     {" AI/ML specialization"}
+                </TextAnimate>
                 </div>
 
           </motion.div>
@@ -557,13 +465,9 @@ const HeroSection = () => {
             variants={interestSectionVariants}
           >
             <div className="flex flex-col items-center space-y-3">
-              <span className="text-gray-400 text-lg"><BlurText
-                                                          text="I am interested in"
-                                                          delay={110}
-                                                          animateBy="chars"
-                                                          direction="top"
-                                                          className="text-2xl"
-                                                        /></span>
+              <TextAnimate animation="blurInUp" as='span' delay={1} className={"text-gray-400 text-1xl font-lora"} by="character">
+                  {"My interests"}
+                  </TextAnimate>
               <div className="h-8 flex items-center">
 
                 <motion.span 
@@ -572,7 +476,7 @@ const HeroSection = () => {
                 >
                   <RotatingText
                       texts={interests}
-                      mainClassName="px-2 sm:px-2 md:px-3 bg-gradient-to-r from-emerald-400 to-blue-400  font-semibold overflow-hidden text-white py-0.5 sm:py-1 md:py-2 justify-center rounded-lg"
+                      mainClassName="px-2 sm:px-2 md:px-3 font-lora bg-black/20 font-semibold overflow-hidden text-white py-0.5 sm:py-1 md:py-2 justify-center rounded-lg"
                       staggerFrom={"last"}
                       initial={{ y: "100%" }}
                       animate={{ y: 0 }}
@@ -580,7 +484,7 @@ const HeroSection = () => {
                       staggerDuration={0.05}
                       splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
                       transition={{ type: "spring", damping: 30, stiffness: 400 }}
-                      rotationInterval={3500}
+                      rotationInterval={3000}
                     /></motion.span>
               </div>
             </div>
