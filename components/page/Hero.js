@@ -1,25 +1,20 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import Image from 'next/image';  // Added Next.js Image import
 import { TextAnimate } from "@/components/ui/text-animate";
-
 import GradientText from '@/components/ui/GradientText';
 import RotatingText from '@/components/ui/RotatingText';
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, useGLTF, useAnimations } from '@react-three/drei'
-
 import { useNav } from '@/components/contexts/NavigationContext';
 import { ChevronDown } from 'lucide-react';
-
-
 import { gsap } from "gsap";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
-
 gsap.registerPlugin(ScrollToPlugin);  
+
 const ScrollHint = () => {
   const [hidden, setHidden] = useState(false);
-
   useEffect(() => {
     const onScroll = () => setHidden(window.scrollY > 120);
     onScroll();
@@ -32,7 +27,6 @@ const ScrollHint = () => {
       {!hidden && (
         <motion.button
           aria-label="Scroll down"
-
           onClick={() => {
             gsap.to(window, {
               duration: 4, 
@@ -51,7 +45,6 @@ const ScrollHint = () => {
           <span className="hidden md:inline font-lora relative text-sm font-bold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-blue-300">
             Scroll Down
           </span>
-
           <motion.div
             aria-hidden
             className="relative"
@@ -85,7 +78,6 @@ function RobotModel({ ...props }) {
           action.time = 2
           action.play()
           setIsPlaying(true)
-
           const duration = action.getClip().duration
           const stopTime = (duration - 2) * 0.8
           
@@ -114,7 +106,6 @@ function RobotModel({ ...props }) {
     if (window.innerWidth >= 768) {
       const targetX = mouse.y * 0.3;
       const targetY = mouse.x * 0.3;
-
       group.current.rotation.x += (targetX - group.current.rotation.x) * 0.05;
       group.current.rotation.y += (targetY - group.current.rotation.y) * 0.05;
     }
@@ -144,7 +135,6 @@ const HeroSection = () => {
   const [isHovering, setIsHovering] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-
   const { setCurrentSection } = useNav();
 
   useEffect(() => {
@@ -180,7 +170,6 @@ const HeroSection = () => {
 
   const handleMouseEnter = () => setIsHovering(true);
   const handleMouseLeave = () => setIsHovering(false);
-
   const handleTouch = () => {
     if (isMobile) {
       setIsHovering(!isHovering);
@@ -320,7 +309,6 @@ const HeroSection = () => {
                      {" AI/ML specialization"}
                 </TextAnimate>
                 </div>
-
             </motion.div>
 
             <motion.div 
@@ -354,37 +342,37 @@ const HeroSection = () => {
           </motion.div>
 
           <motion.div 
-  className="hidden lg:flex lg:w-3/5 h-full items-center justify-center"
-  variants={placeholderVariants}
-  style={{ overflow: 'hidden' }} 
->
-  <div className="w-full h-full" style={{ minHeight: '500px' }}>
-    <Canvas
-      camera={{ position: [0, 0, 5], fov: 35 }}
-      style={{ background: 'transparent' }}
-      gl={{ alpha: true }}
-    >
-      <ambientLight intensity={1} />
-      <directionalLight position={[1, 1, 1]} intensity={1} />
-      
-      <RobotModel 
-        position={[0, -1, 0]} 
-        scale={[1, 1, 1]} 
-      />
-      
-      <OrbitControls 
-        enableZoom={true}
-        enablePan={true}
-        enableRotate={true}
-        minDistance={5} 
-        maxDistance={10} 
-        autoRotate={false}
-      />
-    </Canvas>
-  </div>
-</motion.div>
-
+            className="hidden lg:flex lg:w-3/5 h-full items-center justify-center"
+            variants={placeholderVariants}
+            style={{ overflow: 'hidden' }} 
+          >
+            <div className="w-full h-full" style={{ minHeight: '500px' }}>
+              <Canvas
+                camera={{ position: [0, 0, 5], fov: 35 }}
+                style={{ background: 'transparent' }}
+                gl={{ alpha: true }}
+              >
+                <ambientLight intensity={1} />
+                <directionalLight position={[1, 1, 1]} intensity={1} />
+                
+                <RobotModel 
+                  position={[0, -1, 0]} 
+                  scale={[1, 1, 1]} 
+                />
+                
+                <OrbitControls 
+                  enableZoom={true}
+                  enablePan={true}
+                  enableRotate={true}
+                  minDistance={5} 
+                  maxDistance={10} 
+                  autoRotate={false}
+                />
+              </Canvas>
+            </div>
+          </motion.div>
         </div>
+
         <div className="md:hidden flex flex-col min-h-screen py-8">
           <motion.div 
             className="flex-[0.35] flex items-center justify-center mb-6"
@@ -457,7 +445,6 @@ const HeroSection = () => {
                      {" AI/ML specialization"}
                 </TextAnimate>
                 </div>
-
           </motion.div>
 
           <motion.div 
@@ -469,7 +456,6 @@ const HeroSection = () => {
                   {"My interests"}
                   </TextAnimate>
               <div className="h-8 flex items-center">
-
                 <motion.span 
                   className="text-gray-300 font-light"
                   variants={greetingVariants}
@@ -529,17 +515,14 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
 
   useEffect(() => {
     if (!svgRef.current) return;
-
     const targetPath = isHovering ? hoverPath : defaultPath;
     
     let start = Date.now();
     const duration = 800;
     const startPath = pathData;
-
     const animate = () => {
       const elapsed = Date.now() - start;
       const progress = Math.min(elapsed / duration, 1);
-
       if (progress < 1) {
         setPathData(progress < 0.5 ? startPath : targetPath);
         requestAnimationFrame(animate);
@@ -547,7 +530,6 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
         setPathData(targetPath);
       }
     };
-
     animate();
   }, [isHovering]);
 
@@ -590,7 +572,6 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
             <clipPath id={clipPathId}>
               <path d={pathData} />
             </clipPath>
-
             <filter id={`glow-${size}`} x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
               <feMerge> 
@@ -606,7 +587,6 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
             className="opacity-60"
             style={{ filter: 'blur(12px)' }}
           />
-
           <path
             d={pathData}
             fill={isHovering ? `url(#hoverGradient-${size})` : `url(#avatarGradient-${size})`}
@@ -614,29 +594,36 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
             style={{ filter: 'blur(6px)' }}
           />
 
-          <image 
-            href="/coder.png"
-            x="0" y="0" 
-            width="400" 
-            height="400" 
-            preserveAspectRatio="xMidYMid slice"
-            clipPath={`url(#${clipPathId})`}
-            className={`transition-opacity duration-500 ${
-              isHovering ? 'opacity-0' : 'opacity-100'
-            }`}
-          />
+          {/* Updated to use Next.js Image component with WebP format */}
+          <foreignObject x="0" y="0" width="400" height="400" clipPath={`url(#${clipPathId})`}>
+            <div className="w-full h-full relative">
+              <Image 
+                src="/coder.webp"  // Changed from .png to .webp
+                alt="Profile avatar"
+                fill
+                className={`object-cover transition-opacity duration-500 ${
+                  isHovering ? 'opacity-0' : 'opacity-100'
+                }`}
+                sizes="400px"
+                priority
+              />
+            </div>
+          </foreignObject>
           
-          <image 
-            href={`/avatar-animated.gif?${gifKey}`}
-            x="0" y="0" 
-            width="400" 
-            height="400" 
-            preserveAspectRatio="xMidYMid slice"
-            clipPath={`url(#${clipPathId})`}
-            className={`transition-opacity duration-500 ${
-              isHovering ? 'opacity-100' : 'opacity-0'
-            }`}
-          />
+          <foreignObject x="0" y="0" width="400" height="400" clipPath={`url(#${clipPathId})`}>
+            <div className="w-full h-full relative">
+              <Image 
+                src={`/avatar-animated.gif?${gifKey}`}  // Changed from .gif to .webp (Note: WebP can be animated)
+                alt="Animated profile avatar"
+                fill
+                className={`object-cover transition-opacity duration-500 ${
+                  isHovering ? 'opacity-100' : 'opacity-0'
+                }`}
+                sizes="400px"
+                unoptimized // For animated images
+              />
+            </div>
+          </foreignObject>
 
           <path
             d={pathData}
@@ -648,9 +635,7 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
           />
         </svg>
       )}
-
       <FloatingParticles isHovering={isHovering} size={size} />
-
       <div className="absolute inset-0 pointer-events-none">
         {[...Array(3)].map((_, i) => (
           <motion.div
@@ -697,33 +682,35 @@ const MobileAvatarImage = ({ isHovering, pathData, config, gifKey }) => {
 
   return (
     <div className="relative w-full h-full">
-      <div 
-        className={`w-full h-full bg-center bg-cover absolute inset-0 transition-opacity duration-500 ${
-          isHovering ? 'opacity-0' : 'opacity-100'
-        }`}
-        style={{
-          backgroundImage: 'url(/coder.png)',
-          filter: 'drop-shadow(0 0 20px rgba(0, 245, 255, 0.3))',
-          ...maskStyle
-        }}
-      />
-      
-      <div 
-        className={`w-full h-full bg-center bg-cover absolute inset-0 transition-opacity duration-500 ${
-          isHovering ? 'opacity-100' : 'opacity-0'
-        }`}
-        style={{
-          backgroundImage: `url(/avatar-animated.gif?${gifKey})`,
-          filter: 'drop-shadow(0 0 20px rgba(0, 245, 255, 0.3))',
-          ...maskStyle
-        }}
-      />
-      
-      <div 
-        className="absolute inset-0 flex items-center justify-center bg-gray-700 text-6xl opacity-0 transition-opacity duration-300"
-        style={maskStyle}
-      >
-        👨‍💻
+      {/* Updated to use Next.js Image component for mobile */}
+      <div className="w-full h-full relative" style={maskStyle}>
+        <Image 
+          src="/coder.webp"  // Changed from .png to .webp
+          alt="Profile avatar"
+          fill
+          className={`object-cover transition-opacity duration-500 ${
+            isHovering ? 'opacity-0' : 'opacity-100'
+          }`}
+          style={{ 
+            filter: 'drop-shadow(0 0 20px rgba(0, 245, 255, 0.3))',
+          }}
+          sizes="400px"
+          priority
+        />
+        
+        <Image 
+          src={`/avatar-animated.gif?${gifKey}`}  // Changed from .gif to .webp
+          alt="Animated profile avatar"
+          fill
+          className={`object-cover transition-opacity duration-500 ${
+            isHovering ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{
+            filter: 'drop-shadow(0 0 20px rgba(0, 245, 255, 0.3))',
+          }}
+          sizes="400px"
+          unoptimized // For animated images
+        />
       </div>
     </div>
   );
@@ -731,7 +718,6 @@ const MobileAvatarImage = ({ isHovering, pathData, config, gifKey }) => {
 
 const FloatingParticles = ({ isHovering, size }) => {
   const particleCount = size === 'mobile' ? 8 : 12;
-  
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
       {[...Array(particleCount)].map((_, i) => (
