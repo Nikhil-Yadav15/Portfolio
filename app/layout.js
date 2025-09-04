@@ -39,6 +39,13 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+       <head>
+            <link 
+          rel="preload" 
+          href="https://prod.spline.design/WCl3Q-TO45nDydSB/scene.splinecode" 
+          as="fetch"
+          crossOrigin="anonymous"/>
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} ${pinyonScript.variable} antialiased bg-black`}
       >
