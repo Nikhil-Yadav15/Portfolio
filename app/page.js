@@ -93,7 +93,6 @@ export default function GlassBreakPage() {
 
   const preloadModel = useCallback((src) => {
     return new Promise((resolve, reject) => {
-      // Check if file exists by trying to fetch it first
       fetch(src, { method: 'HEAD' })
         .then(response => {
           if (!response.ok) {
@@ -122,6 +121,31 @@ export default function GlassBreakPage() {
     });
   }, []);
 
+  // 
+  const preloadSplineScene = useCallback((src) => {
+    return new Promise((resolve, reject) => {
+      fetch(src, { 
+        method: 'GET',
+        mode: 'cors',
+        cache: 'force-cache'
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Failed to fetch Spline scene: ${src} - ${response.status}`);
+          }
+          return response.text(); // This actually downloads and caches the scene
+        })
+        .then(() => {
+          console.log(`Spline scene preloaded: ${src}`);
+          resolve(src);
+        })
+        .catch(error => {
+          console.warn(`Spline scene preload failed: ${src}`, error);
+          reject(new Error(`Failed to preload Spline scene: ${src} - ${error.message}`));
+        });
+    });
+  }, []);
+
   const preloadAsset = useCallback((asset) => {
     switch (asset.type) {
       case 'image':
@@ -132,6 +156,8 @@ export default function GlassBreakPage() {
         return preloadAudio(asset.src);
       case 'model':
         return preloadModel(asset.src);
+      case 'spline':
+        return preloadSplineScene(asset.src);
       default:
         return Promise.resolve(asset.src);
     }
