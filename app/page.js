@@ -867,7 +867,7 @@ export default function GlassBreakPage() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    backgroundImage: 'url(/crack.png)',
+                    backgroundImage: 'url(/crack.webp)',
                     backgroundSize: '100vw 100vh',
                     backgroundPosition: fragment.backgroundPosition,
                     backgroundRepeat: 'no-repeat',
