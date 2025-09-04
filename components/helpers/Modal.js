@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { X, ExternalLink, Github } from "lucide-react";
 import { LinkPreview } from "@/components/ui/link-preview";
+import Image from "next/image";
 
 export function OptimizedModal({ isOpen, onClose, expandedCard, id }) {
   const dialogRef = useRef(null);
@@ -71,11 +72,12 @@ export function OptimizedModal({ isOpen, onClose, expandedCard, id }) {
               layoutId={`image-${expandedCard.title}-${id}`} 
               className="relative h-64 md:h-80 overflow-hidden"
             >
-              <img
-                src={expandedCard.src}
-                alt={expandedCard.title}
-                className="w-full h-full object-cover"
-              />
+                  <Image
+                    src={expandedCard.src}
+                    alt={expandedCard.title}
+                    fill
+                    className="object-cover"
+                  />
               <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/20 to-transparent" />
             </motion.div>
 
