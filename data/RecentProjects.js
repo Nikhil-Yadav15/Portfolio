@@ -6,9 +6,9 @@ export const RecentProjects = [
     card: {
       title: "CoPilotX – Multi-Agent Startup Workspace",
       description: "LangGraph + ReAct Agent Collaboration",
-      src: "/projects/copilotx.png",
+      src: "/projects/copilotx.webp",
       hoverGifUrl: "/projects/hovergif/copilotx.gif",
-      imageSrc: "/projects/copilotx.png",
+      imageSrc: "/projects/copilotx.webp",
       ctaText: "Visit Live Site",
       ctaLink: "https://copilot-x-beta.vercel.app/",
       githubLink: "https://github.com/Nikhil-Yadav15/CoPilotX",
@@ -29,9 +29,9 @@ export const RecentProjects = [
     card: {
       title: "StorageCube - Smart Cloud Storage",
       description: "Next.js + Stripe + Cloudinary",
-      src: "/projects/storagecube.png",
+      src: "/projects/storagecube.webp",
       hoverGifUrl: "/projects/hovergif/storagecube.gif",
-      imageSrc: "/projects/storagecube.png",
+      imageSrc: "/projects/storagecube.webp",
       ctaText: "Visit Live Site",
       ctaLink: "https://storagecube.vercel.app/",
       githubLink: "https://github.com/Nikhil-Yadav15/StorageCube",
@@ -52,7 +52,7 @@ export const RecentProjects = [
   //   card: {
   //     title: "Contextual File Searcher (MCP)",
   //     description: "Semantic + Keyword Hybrid Search",
-  //     src: "/gemini.png",
+  //     src: "/gemini.webp",
   //     ctaText: "View Repository",
   //     ctaLink: "https://github.com/Nikhil-Yadav15/ContextualFileSearchMCP",
   //     tech: ["Python", "Sentence-Transformers", "PyPDF2", "Openpyxl", "FastMCP", "JSON"],
@@ -72,7 +72,7 @@ export const RecentProjects = [
     card: {
       title: "Bridge Ball - Unity Arcade Game",
       description: "C# / Unity",
-      src: "/projects/bridgeball.png",
+      src: "/projects/bridgeball.webp",
       hoverGifUrl: "/projects/hovergif/bridgeball.gif",
       ctaText: "View Repository",
       ctaLink: "https://github.com/Nikhil-Yadav15/Bridge-Ball",
@@ -93,7 +93,7 @@ export const RecentProjects = [
     card: {
       title: "QuickVault",
       description: "Temporary Sharing with Custom Links",
-      src: "/projects/quickvault.png",
+      src: "/projects/quickvault.webp",
       hoverGifUrl: "/projects/hovergif/quickvault.gif",
       ctaText: "Visit Live Site",
       ctaLink: "https://quickvault.vercel.app/",
@@ -115,7 +115,7 @@ export const RecentProjects = [
     card: {
       title: "Captcha Cracker",
       description: "96% Accuracy – 1st Place",
-      src: "/projects/captcha.png",
+      src: "/projects/captcha.webp",
       ctaText: "View Repository",
       ctaLink: "https://github.com/Nikhil-Yadav15/CaptchaCracker",
       tech: ["Python", "TensorFlow", "Keras", "OpenCV"],
@@ -135,7 +135,7 @@ export const RecentProjects = [
     card: {
       title: "SkySprint",
       description: "Endless 2D Aerial Runner",
-      src: "/projects/skysprint.png",
+      src: "/projects/skysprint.webp",
       hoverGifUrl: "/projects/hovergif/skysprint.gif",
       ctaText: "Play Demo",
       ctaLink: "https://play.unity.com/en/games/1beac085-ab1e-4848-96a1-8dac445c5f71/skysprint",
