@@ -15,6 +15,7 @@ import Loader from '@/components/ui/StartingLoader';
 import { useNav } from '@/components/contexts/NavigationContext';
 import { getAllAssets, getCriticalAssets, PORTFOLIO_ASSETS } from '@/data/Assets';
 
+
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger, useGSAP);
 }
