@@ -59,6 +59,11 @@ export const getAllAssets = () => {
     ...assets.PROJECT_GIFS,
     ...assets.PROJECT_PNGS,
     ...assets.AUDIO,
+    {
+      type: 'spline',
+      src: 'https://prod.spline.design/WCl3Q-TO45nDydSB/scene.splinecode',
+      name: 'About Page 3D Model'
+    }
   ];
 };
 
