@@ -1,5 +1,5 @@
-// Add this component to your Hero.js or create a separate AvatarContainer component
 import { useState } from 'react';
+import Image from "next/image";
 const AvatarContainer = ({ 
     staticImage = '/gemini.png', 
     animatedImage = '/avatar-animated.gif',
@@ -28,12 +28,15 @@ const AvatarContainer = ({
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
-              <img
-                src={isHovered ? animatedImage : staticImage}
-                alt={name}
-                className="w-full h-full object-cover transition-all duration-300 group-hover:scale-110"
-                loading="eager"
-              />
+              <div className="relative w-full h-full">
+                <Image
+                  src={isHovered ? animatedImage : staticImage}
+                  alt={name}
+                  fill
+                  priority  // same as loading="eager"
+                  className="object-cover transition-all duration-300 group-hover:scale-110"
+                />
+              </div>
               
               {/* Overlay Effects */}
               <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-transparent to-cyan-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
