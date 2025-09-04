@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';  // Added Next.js Image import
+import Image from 'next/image'; 
 import { TextAnimate } from "@/components/ui/text-animate";
 import GradientText from '@/components/ui/GradientText';
 import RotatingText from '@/components/ui/RotatingText';
@@ -559,15 +559,16 @@ const UniqueAvatarShape = ({ isHovering, onMouseEnter, onMouseLeave, onTouch, si
         >
           <defs>
             <radialGradient id={`avatarGradient-${size}`} cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#00f5ff" stopOpacity="0.8" />
-              <stop offset="50%" stopColor="#8a2be2" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#ff1493" stopOpacity="0.4" />
+              <stop offset="0%" stopColor="black" stopOpacity="1" />
+              <stop offset="100%" stopColor="black" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="black" stopOpacity="0.9" />
             </radialGradient>
             
+            
             <radialGradient id={`hoverGradient-${size}`} cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#ff1493" stopOpacity="0.9" />
-              <stop offset="50%" stopColor="#00f5ff" stopOpacity="0.7" />
-              <stop offset="100%" stopColor="#8a2be2" stopOpacity="0.5" />
+              <stop offset="0%" stopColor="#222626" stopOpacity="1" />
+              <stop offset="70%" stopColor="#222626" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#222626" stopOpacity="0" />
             </radialGradient>
             <clipPath id={clipPathId}>
               <path d={pathData} />
