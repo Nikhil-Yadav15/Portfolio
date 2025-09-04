@@ -3,7 +3,7 @@ export const PORTFOLIO_ASSETS = {
     // High priority (critical for initial render)
     HIGH_PRIORITY: [
       { src: "/avatar-animated.gif", type: "image", priority: "high" },
-      { src: "/coder.png", type: "image", priority: "high" },
+      { src: "/coder.webp", type: "image", priority: "high" },
       { src: "/creator.mp4", type: "video", priority: "high" },
     ],
     
@@ -33,13 +33,13 @@ export const PORTFOLIO_ASSETS = {
     
     // Project PNGs
     PROJECT_PNGS: [
-      { src: "/projects/bridgeball.png", type: "image" },
-      { src: "/projects/bridgeball_repo.png", type: "image" },
-      { src: "/projects/captcha.png", type: "image" },
-      { src: "/projects/copilotx.png", type: "image" },
-      { src: "/projects/quickvault.png", type: "image" },
-      { src: "/projects/skysprint.png", type: "image" },
-      { src: "/projects/storagecube.png", type: "image" },
+      { src: "/projects/bridgeball.webp", type: "image" },
+      { src: "/projects/bridgeball_repo.webp", type: "image" },
+      { src: "/projects/captcha.webp", type: "image" },
+      { src: "/projects/copilotx.webp", type: "image" },
+      { src: "/projects/quickvault.webp", type: "image" },
+      { src: "/projects/skysprint.webp", type: "image" },
+      { src: "/projects/storagecube.webp", type: "image" },
     ],
     
     // Audio
