@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, lazy, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { TextAnimate } from "@/components/ui/text-animate";
 import DecryptedText from '@/components/ui/DecryptedText';
 import { VideoText } from '@/components/ui/VideoTextMask';
@@ -43,12 +43,12 @@ const containerVariants = {
 const About = () => {
   const [isVisible, setIsVisible] = useState(false);
   const isMobile = useIsMobile();
-  const [forceTextAnimation, setForceTextAnimation] = useState(false);
+  // const [forceTextAnimation, setForceTextAnimation] = useState(false);
 
   useEffect(() => {
     const timer = requestAnimationFrame(() => {
       setIsVisible(true);
-      setForceTextAnimation(true);
+      // setForceTextAnimation(true);
     });
     
     return () => cancelAnimationFrame(timer);
@@ -138,7 +138,7 @@ const About = () => {
       {!isMobile && (
         <div className="w-full lg:w-[45dvw] flex items-start justify-center relative overflow-hidden min-h-[50vh] hide-spline-watermark lg:min-h-screen">
           <Suspense fallback={<div>Loading 3D model...</div>}>
-            // <LazySpline scene="https://prod.spline.design/WCl3Q-TO45nDydSB/scene.splinecode" />
+            {/* <LazySpline scene="https://prod.spline.design/.../scene.splinecode" /> */}
             <Spline scene="https://prod.spline.design/WCl3Q-TO45nDydSB/scene.splinecode" />
           </Suspense>
         </div>
