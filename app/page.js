@@ -868,7 +868,7 @@ export default function GlassBreakPage() {
                   className="absolute inset-0"
                   style={{
                     backgroundImage: 'url(/crack.webp)',
-                    backgroundSize: '100vw 100vh',
+                    backgroundSize: '100dvw 100dvh',
                     backgroundPosition: fragment.backgroundPosition,
                     backgroundRepeat: 'no-repeat',
                     transform: 'scale(0.95)',
@@ -953,8 +953,8 @@ const EnhancedGlassCrackOverlay = ({ ref }) => (
       viewBox="0 0 100 100" 
       preserveAspectRatio="none"
       style={{ 
-        width: '100vw', 
-        height: '100vh' 
+        width: '100dvw', 
+        height: '100dvh' 
       }}
     >
       <defs>
