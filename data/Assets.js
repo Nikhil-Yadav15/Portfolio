@@ -1,6 +1,6 @@
 // data/Assets.js
 
-export const getPortfolioAssets = () => ({
+export const PORTFOLIO_ASSETS = () => ({
   // High priority (critical for initial render)
   HIGH_PRIORITY: [
     { src: "/avatar-animated.gif", type: "image", priority: "high" },
@@ -51,7 +51,7 @@ export const getPortfolioAssets = () => ({
 
 // Helpers
 export const getAllAssets = () => {
-  const assets = getPortfolioAssets();
+  const assets = PORTFOLIO_ASSETS();
   return [
     ...assets.HIGH_PRIORITY,
     ...assets.MODELS,
@@ -67,4 +67,4 @@ export const getAllAssets = () => {
   ];
 };
 
-export const getCriticalAssets = () => getPortfolioAssets().HIGH_PRIORITY;
+export const getCriticalAssets = () => PORTFOLIO_ASSETS().HIGH_PRIORITY;
