@@ -8,7 +8,6 @@ import { Canvas } from '@react-three/fiber';
 import { BlackHoleModel } from '@/components/scenes/BlackHoleModel';
 import { useGLTF } from '@react-three/drei';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import * as THREE from 'three';
 import MainContent from '@/components/page/MainContent';
 import Hero from '@/components/page/Hero';
 import ShaderBackground from '@/components/ui/shader-background';
@@ -226,7 +225,7 @@ export default function GlassBreakPage() {
     setSceneState(prev => ({ ...prev, current: 'glass', transitioning: false }));
   }, [deleteAllFragments]);
 
-  // Asset preloading effect
+  // Asset preloading effect - UPDATED TO REMOVE DEMO STAGES
   useEffect(() => {
     if (!isHydrated) return;
     
@@ -256,8 +255,7 @@ export default function GlassBreakPage() {
         // Stage 2: Load models (with error handling)
         setPreloadStage('models');
         const modelAssets = PORTFOLIO_ASSETS.MODELS.filter(model => {
-          // Check if model files exist by filtering based on your actual files
-          const validModels = ['/blackhole_compress.glb']; // Add only models that exist
+          const validModels = ['/blackhole_compress.glb'];
           return validModels.includes(model.src);
         });
         
@@ -266,10 +264,10 @@ export default function GlassBreakPage() {
             setAssetLoadingProgress(30 + (progress * 0.2)); // 20% for models
           });
         } else {
-          setAssetLoadingProgress(50); // Skip models if none exist
+          setAssetLoadingProgress(50);
         }
 
-        // Stage 3: Load remaining assets in background
+        // Stage 3: Load remaining assets
         setPreloadStage('remaining-assets');
         const remainingAssets = [
           ...PORTFOLIO_ASSETS.TECH_SVGS,
@@ -282,7 +280,7 @@ export default function GlassBreakPage() {
           setAssetLoadingProgress(50 + (progress * 0.5)); // 50% for remaining assets
         });
 
-        // Mark assets as loaded
+        // Mark assets as loaded and DIRECTLY COMPLETE LOADING
         localStorage.setItem('assetspreloaded', 'true');
         
         setSceneState(prev => ({ 
@@ -291,7 +289,10 @@ export default function GlassBreakPage() {
           modelsLoaded: true 
         }));
 
-        setPreloadStage('glass-break');
+        // DIRECTLY GO TO HERO MOUNT - NO DEMO STAGES
+        resetAnimationStates();
+        setHeroMounted(true);
+        setPreloadComplete(true);
         
       } catch (error) {
         console.error('Asset preloading failed:', error);
@@ -301,7 +302,11 @@ export default function GlassBreakPage() {
           assetsLoaded: true,
           modelsLoaded: true 
         }));
-        setPreloadStage('glass-break');
+        
+        // DIRECTLY GO TO HERO MOUNT EVEN ON ERROR
+        resetAnimationStates();
+        setHeroMounted(true);
+        setPreloadComplete(true);
       }
     };
 
@@ -453,7 +458,7 @@ export default function GlassBreakPage() {
     
   }, [isHydrated, heroMounted, showMainContent, fragmentsGenerated, crackLines]);
 
-  // COMPLETE GSAP TIMELINE - This was missing in my previous response
+  // COMPLETE GSAP TIMELINE
   useGSAP(() => {
     if (toNavigate !== null && currentSection === "hero") {
       return;
@@ -542,7 +547,7 @@ export default function GlassBreakPage() {
                 setTimeout(() => {
                   ScrollTrigger.refresh();
                 }, 100);
-              }, 800); // Allow black hole to complete its animation
+              }, 800);
             }
           }
 
@@ -798,27 +803,11 @@ export default function GlassBreakPage() {
     return `polygon(${points.join(', ')})`;
   };
 
+  // SIMPLIFIED LOADER - NO DEMO STAGES
   if (!preloadComplete) {
     return (
       <div className="h-[100dvh] z-41 bg-black flex items-center justify-center relative">
         <Loader progress={assetLoadingProgress} stage={preloadStage} />
-        {preloadStage !== 'critical-assets' && (
-          <div className="absolute inset-0 opacity-0 pointer-events-none">
-            <PreloadSequence 
-              stage={preloadStage}
-              progress={assetLoadingProgress}
-              onStageComplete={(nextStage) => {
-                if (nextStage === 'complete') {
-                  resetAnimationStates();
-                  setHeroMounted(true);
-                  setPreloadComplete(true);
-                } else {
-                  setPreloadStage(nextStage);
-                }
-              }}
-            />
-          </div>
-        )}
       </div>
     );
   }
@@ -948,288 +937,6 @@ export default function GlassBreakPage() {
       {showMainContent && (
         <div className="inset-0 w-full h-[100dvh] z-50">
           <MainContent />
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Updated PreloadSequence Component
-function PreloadSequence({ stage, progress, onStageComplete }) {
-  const containerRef = useRef(null);
-  const heroRef = useRef(null);
-  const crackOverlayRef = useRef(null);
-  const fragmentsRef = useRef([]);
-  const blackHoleCanvasRef = useRef(null);
-  
-  const [preloadFragments, setPreloadFragments] = useState([]);
-  const [showPreloadBlackHole, setShowPreloadBlackHole] = useState(false);
-
-  useEffect(() => {
-    if (stage === 'glass-break' && preloadFragments.length === 0) {
-      const generateFragments = () => {
-        const centerX = window.innerWidth / 2 - 5;
-        const centerY = window.innerHeight / 2 + 7;
-        const fragments = [];
-        let fragmentId = 0;
-
-        const crackLines = [
-          { start: [50, 50], end: [0, 0], angle: -135 },
-          { start: [50, 50], end: [100, 0], angle: -45 },
-          { start: [50, 50], end: [100, 100], angle: 45 },
-          { start: [50, 50], end: [0, 100], angle: 135 },
-          { start: [50, 50], end: [0, 50], angle: 180 },
-          { start: [50, 50], end: [100, 50], angle: 0 },
-          { start: [50, 50], end: [50, 0], angle: -90 },
-          { start: [50, 50], end: [50, 100], angle: 90 },
-        ];
-
-        // Fragment generation code...
-        crackLines.forEach((crack, crackIndex) => {
-          const fragmentsPerLine = 3;
-          
-          for (let i = 0; i < fragmentsPerLine; i++) {
-            const lineProgress = (i + 1) / (fragmentsPerLine + 1) + (Math.random() - 0.5) * 0.2;
-            
-            const crackStartX = (crack.start[0] / 100) * window.innerWidth;
-            const crackStartY = (crack.start[1] / 100) * window.innerHeight;
-            const crackEndX = (crack.end[0] / 100) * window.innerWidth;
-            const crackEndY = (crack.end[1] / 100) * window.innerHeight;
-            
-            const fragmentX = crackStartX + (crackEndX - crackStartX) * lineProgress;
-            const fragmentY = crackStartY + (crackEndY - crackStartY) * lineProgress;
-            
-            const perpOffset = (Math.random() - 0.5) * 80;
-            const perpAngle = crack.angle + 90;
-            const perpX = Math.cos(perpAngle * Math.PI / 180) * perpOffset;
-            const perpY = Math.sin(perpAngle * Math.PI / 180) * perpOffset;
-            
-            const initialX = fragmentX + perpX;
-            const initialY = fragmentY + perpY;
-            
-            const distanceFromCenter = Math.sqrt(
-              Math.pow(fragmentX - centerX, 2) + Math.pow(fragmentY - centerY, 2)
-            );
-            const baseSize = Math.max(60, 180 - distanceFromCenter * 0.3);
-            const fragmentWidth = baseSize + Math.random() * 60;
-            const fragmentHeight = baseSize * 0.8 + Math.random() * 40;
-            
-            fragments.push({
-              id: fragmentId++,
-              initialX: initialX - fragmentWidth/2,
-              initialY: initialY - fragmentHeight/2,
-              finalX: centerX - fragmentWidth/2,
-              finalY: centerY - fragmentHeight/2,
-              width: fragmentWidth,
-              height: fragmentHeight,
-              rotation: crack.angle + (Math.random() - 0.5) * 30,
-              finalRotation: crack.angle + (Math.random() - 0.5) * 720,
-              clipPath: generateRealisticGlassShape(crack.angle),
-              backgroundPosition: `${-(initialX - fragmentWidth/2)}px ${-(initialY - fragmentHeight/2)}px`,
-              crackIndex,
-              lineProgress,
-              scale: 1,
-              opacity: 0,
-            });
-          }
-        });
-
-        setPreloadFragments(fragments);
-      };
-
-      generateFragments();
-    }
-  }, [stage]);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const runStageAnimation = async () => {
-      const tl = gsap.timeline();
-
-      switch (stage) {
-        case 'glass-break':
-          if (heroRef.current && crackOverlayRef.current) {
-            tl.to(crackOverlayRef.current, { opacity: 1, duration: 0.5, ease: "power2.inOut" })
-              .to(heroRef.current, { scale: 1.01, filter: "blur(0.5px)", duration: 0.3, ease: "power2.inOut" }, 0.3)
-              .to(crackOverlayRef.current, { opacity: 0, duration: 0.2, ease: "power2.out" }, 1)
-              .to(heroRef.current, { opacity: 0, scale: 1.03, filter: "blur(3px)", duration: 0.3, ease: "power3.inOut" }, 1);
-
-            preloadFragments.forEach((fragment) => {
-              const fragmentElement = fragmentsRef.current[fragment.id];
-              if (fragmentElement) {
-                gsap.set(fragmentElement, {
-                  x: fragment.initialX,
-                  y: fragment.initialY,
-                  rotation: fragment.rotation,
-                  scale: 1.1,
-                  opacity: 0
-                });
-
-                tl.to(fragmentElement, { opacity: 1, scale: 1, duration: 0.1, ease: "back.out(2)" }, 1.5 + fragment.lineProgress * 0.05)
-                  .to(fragmentElement, {
-                    x: fragment.finalX,
-                    y: fragment.finalY,
-                    rotation: fragment.finalRotation,
-                    scale: 0.1,
-                    duration: 0.4,
-                    ease: "power2.inOut"
-                  }, 2 + fragment.lineProgress * 0.1)
-                  .to(fragmentElement, { opacity: 0, scale: 0.02, duration: 0.2, ease: "power3.in" }, 2.5);
-              }
-            });
-          }
-
-          await new Promise(resolve => setTimeout(resolve, 3000));
-          onStageComplete('blackhole');
-          break;
-
-        case 'blackhole':
-          setShowPreloadBlackHole(true);
-          await new Promise(resolve => setTimeout(resolve, 4000));
-          localStorage.setItem('assetspreloaded', 'true');
-          onStageComplete('complete');
-          break;
-      }
-    };
-
-    runStageAnimation();
-  }, [stage, preloadFragments, onStageComplete]);
-
-  useEffect(() => {
-    return () => {
-      try {
-        gsap.killTweensOf("*");
-      } catch (error) {
-        console.warn('Animation cleanup error:', error);
-      }
-      
-      if (fragmentsRef.current) {
-        fragmentsRef.current.forEach(fragment => {
-          if (fragment && fragment.parentNode) {
-            try {
-              fragment.parentNode.removeChild(fragment);
-            } catch (error) {
-              console.warn('Fragment cleanup error:', error);
-            }
-          }
-        });
-        fragmentsRef.current = [];
-      }
-    };
-  }, []);
-
-  const generateRealisticGlassShape = (crackAngle) => {
-    const points = [];
-    const numPoints = 5 + Math.floor(Math.random() * 3);
-    
-    for (let i = 0; i < numPoints; i++) {
-      const baseAngle = (i / numPoints) * 360;
-      const angleBias = Math.sin((baseAngle - crackAngle) * Math.PI / 180) * 10;
-      const variance = 15 + Math.random() * 15 + Math.abs(angleBias);
-      
-      const x = 50 + Math.cos(baseAngle * Math.PI / 180) * variance;
-      const y = 50 + Math.sin(baseAngle * Math.PI / 180) * variance;
-      points.push(`${Math.max(5, Math.min(95, x))}% ${Math.max(5, Math.min(95, y))}%`);
-    }
-    
-    return `polygon(${points.join(', ')})`;
-  };
-
-  return (
-    <div ref={containerRef} className="relative h-screen w-full overflow-hidden">
-      <ShaderBackground 
-        gradient="radial-gradient(circle, #2d1b69, #000000)"
-        color="rgb(255, 250, 194)"
-        particleCount={200}
-        particleSize={0.2}
-        rotationSpeed={0.0005}
-      />
-
-      {stage === 'glass-break' && (
-        <>
-          <div className="absolute inset-0 flex items-center justify-center z-10">
-            <div ref={heroRef}>
-              <Hero />
-            </div>
-          </div>
-          <EnhancedGlassCrackOverlay ref={crackOverlayRef} />
-          
-          <div className="absolute inset-0 pointer-events-none z-20">
-            {preloadFragments.map((fragment) => (
-              <div
-                key={fragment.id}
-                ref={el => fragmentsRef.current[fragment.id] = el}
-                className="absolute will-change-transform"
-                style={{
-                  width: fragment.width,
-                  height: fragment.height,
-                  opacity: 0,
-                }}
-              >
-                <div 
-                  className="w-full h-full relative overflow-hidden"
-                  style={{
-                    clipPath: fragment.clipPath,
-                    border: '1px solid rgba(255,255,255,0.4)',
-                    boxShadow: `
-                      0 0 25px rgba(255,255,255,0.3),
-                      inset 0 0 15px rgba(255,255,255,0.1),
-                      0 2px 10px rgba(0,0,0,0.3)
-                    `,
-                    backdropFilter: 'blur(1px)',
-                    background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.15) 100%)',
-                  }}
-                >
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      backgroundImage: 'url(/crack.png)',
-                      backgroundSize: '100vw 100vh',
-                      backgroundPosition: fragment.backgroundPosition,
-                      backgroundRepeat: 'no-repeat',
-                      transform: 'scale(0.95)',
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {showPreloadBlackHole && (
-        <div ref={blackHoleCanvasRef} className="absolute inset-0 z-50">
-          <Canvas
-            camera={{ 
-              position: [0, 0, 5],
-              fov: 125,
-              near: 0.1,
-              far: 1000
-            }}
-            gl={{
-              antialias: true,
-              alpha: true,
-              powerPreference: "high-performance",
-              stencil: false,
-              preserveDrawingBuffer: false,
-            }}
-            dpr={Math.min(window.devicePixelRatio, 2)}
-          >
-            <Suspense fallback={null}>
-              <ambientLight intensity={0.8} />
-              <directionalLight position={[5, 5, 5]} intensity={2} />
-              <pointLight position={[0, 0, -2]} intensity={3} color="#4a90ff" distance={20} />
-              <pointLight position={[3, 0, 0]} intensity={1.5} color="#ffffff" />
-              <pointLight position={[-3, 0, 0]} intensity={1.5} color="#ffffff" />
-              <pointLight position={[0, 3, 0]} intensity={1.5} color="#ffffff" />
-              
-              <BlackHoleModel 
-                position={[0, -1, -8]}
-                startAutoScale={true}
-              />
-            </Suspense>
-          </Canvas>
         </div>
       )}
     </div>
