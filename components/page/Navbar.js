@@ -198,7 +198,7 @@ const DarkNavbarDesktop = React.memo(function DarkNavbarDesktop({
       animate={{
         y: hidden ? -96 : 0,
         opacity: hidden ? 0 : 1,
-        width: collapsed ? "48px" : "80dvw",
+        width: collapsed ? "48px" : "84dvw",
         left: collapsed ? "auto" : "50%",
         right: collapsed ? "24px" : "auto",
         x: collapsed ? 0 : "-50%"
