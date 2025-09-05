@@ -4,8 +4,10 @@ import { GoogleGeminiEffect } from '@/components/ui/AuroraScrollWave';
 import InfiniteMenu from '@/components/ui/infinite_menu';
 import { techItems } from '@/data/Techs';
 import { TextAnimate } from "@/components/ui/text-animate";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function TechStack() {
+  const isMobile = useIsMobile();
   return (
     <div 
       className="min-h-screen text-white relative"
@@ -41,7 +43,7 @@ export default function TechStack() {
          
         </div>
       </div>
-      <GoogleGeminiEffect className="absolute inset-0" />
+      {!isMobile && <GoogleGeminiEffect className="absolute inset-0" />}
     </div>
   );
 }
