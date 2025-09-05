@@ -48,7 +48,7 @@ export default function SectionTransitions() {
       gestureDirection: 'vertical',
       smooth: true,
       mouseMultiplier: 1,
-      touchMultiplier: 2,
+      touchMultiplier: 1,
       infinite: false,
       autoRaf: false,
       syncTouch: true,
