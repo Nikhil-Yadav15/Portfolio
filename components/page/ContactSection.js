@@ -19,7 +19,7 @@ const schema = z.object({
 export default function ContactSection() {
   const words = [
     { text: "Awaiting", className: "text-white font-lora" },
-    { text: "  ", className: "text-white font-lora" }, // space
+    { text: "  ", className: "text-white font-lora" },
     { text: "next", className: "text-white font-lora" },
     { text: " ", className: "text-white font-lora" },
     { text: "collaboration", className: "text-white font-lora" },
@@ -58,7 +58,7 @@ export default function ContactSection() {
   };
 
   return (
-    <div className="w-full min-h-[100dvh] flex flex-col">
+    <div className="w-full min-h-[100dvh] flex flex-col" data-lenis-prevent>
       <div className="flex-1 flex flex-col items-center justify-center py-8 px-4 md:py-16">
         <motion.div
           initial={{ opacity: 0, y: -30 }}
