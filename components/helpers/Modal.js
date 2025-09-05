@@ -45,6 +45,7 @@ export function OptimizedModal({ isOpen, onClose, expandedCard, id }) {
     <dialog 
       ref={dialogRef}
       className="backdrop:bg-black/80 backdrop:backdrop-blur-sm bg-transparent border-none p-0 max-w-none max-h-none w-screen h-screen overflow-visible focus:outline-none"
+      data-lenis-prevent
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -131,7 +132,7 @@ export function OptimizedModal({ isOpen, onClose, expandedCard, id }) {
                     <LinkPreview
                       url={expandedCard.ctaLink}
                       imageSrc={expandedCard.imageSrc}
-                      className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+                      className="inline-flex w-full items-center justify-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-900"
                     >
                       <ExternalLink size={18} />
                       {expandedCard.ctaText || "Visit Project"}
