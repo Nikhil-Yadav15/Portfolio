@@ -213,7 +213,7 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
           style={{ backgroundColor: backgroundColors[activeSection % backgroundColors.length] }}
         >
           <div
-            className={cn("lg:sticky lg:top-20 h-fit hidden lg:block w-[40dvw]", contentClassName)}
+            className={cn("lg:sticky lg:top-60 h-fit hidden lg:block w-[40dvw]", contentClassName)}
           >
             {currentCard ? (
               <motion.div
