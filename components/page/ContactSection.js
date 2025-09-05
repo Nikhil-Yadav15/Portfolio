@@ -87,12 +87,12 @@ export default function ContactSection() {
               radius: 350,
               maskColor: "#000000",
               canvasColors: [
-                [139, 92, 246], 
-                [59, 7, 100],   
-                [168, 85, 247], 
-                [236, 72, 153], 
+                [130, 8, 252], 
+                [66, 1, 28],   
+                [168, 85, 247],
+                [236, 72, 153],
               ],
-              dotSize: 2,
+              dotSize: 5,
             }}
             contentBg="rgba(6,6,20,0.95)"
             className="w-full"
