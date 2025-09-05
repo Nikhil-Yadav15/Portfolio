@@ -8,6 +8,7 @@ import { FaGithub, FaLinkedin, FaDiscord } from "react-icons/fa";
 import { TextAnimate } from "@/components/ui/text-animate";
 import {NeonSpotlightCard} from "@/components/ui/NeonSpotlightCard";
 import { TypewriterEffect } from "@/components/ui/TypewriterEffect";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const schema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -17,6 +18,7 @@ const schema = z.object({
 });
 
 export default function ContactSection() {
+  const isMobile = useIsMobile();
   const words = [
     { text: "Awaiting", className: "text-white font-lora" },
     { text: "  ", className: "text-white font-lora" },
@@ -75,11 +77,11 @@ export default function ContactSection() {
           className="w-full max-w-4xl"
         >
           <NeonSpotlightCard
-            borderSize={4}
+            borderSize={isMobile ? 3 : 10}
             borderRadius={24}
             neonColors={{
-              firstColor: "#8B5CF6", 
-              secondColor: "#3B0764",
+              firstColor: "#0d05fc", 
+              secondColor: "#fc0585",
             }}
             spotlight={{
               radius: 350,
@@ -95,7 +97,7 @@ export default function ContactSection() {
             contentBg="rgba(6,6,20,0.95)"
             className="w-full"
           >
-            <div className="p-8 md:p-12"> 
+            <div className="md:p-12"> 
               <form
                 onSubmit={handleSubmit(onSubmit)}
                 className="flex flex-col gap-6"
@@ -223,7 +225,7 @@ export default function ContactSection() {
                     whileTap={{ scale: 0.98 }}
                     disabled={isSubmitting}
                     type="submit"
-                    className="cursor-pointer bg-gradient-to-r from-purple-950 via-purple-900 to-purple-950 text-white font-bold py-4 px-12 rounded-lg shadow-lg transition-all duration-300 hover:from-purple-900 hover:to-purple-900 disabled:opacity-50 disabled:cursor-not-allowed font-mono tracking-wide text-lg max-w-xs w-full md:max-w-md"
+                    className="cursor-pointer bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold py-4 px-12 rounded-lg shadow-lg transition-all duration-300 hover:from-pink-600 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed font-mono tracking-wide text-lg max-w-xs w-full md:max-w-md"
                   >
                     {isSubmitting ? (
                       <span className="flex items-center justify-center gap-2">
