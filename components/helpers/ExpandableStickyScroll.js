@@ -22,7 +22,6 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
   const modalRef = useRef(null);
   const scrollerRef = useRef(null);
 
-  // Separate refs for desktop and mobile DOM elements
   const desktopSectionRefs = useRef([]);  
   const mobileSectionRefs = useRef([]);
 
@@ -36,7 +35,6 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
 
   const isMobile = typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT;
 
-  // Keep the ref arrays trimmed to sections length
   useEffect(() => {
     desktopSectionRefs.current = desktopSectionRefs.current.slice(0, sections.length);
     mobileSectionRefs.current = mobileSectionRefs.current.slice(0, sections.length);
@@ -54,11 +52,9 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
     return closest || scrollerRef.current || window;
   };
 
-  // GSAP and scroll logic - only for desktop
   useEffect(() => {
-    if (isMobile) return; // Skip GSAP logic on mobile devices
+    if (isMobile) return;
 
-    // Destroy any pre-existing GSAP ScrollTriggers
     try {
       if (ScrollTrigger && ScrollTrigger.getAll) {
         const old = ScrollTrigger.getAll();
@@ -68,7 +64,7 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
         }
       }
     } catch (e) {
-      // ignore if ScrollTrigger not present or any error
+      console.log()
     }
 
     const scroller = getScrollContainer();
@@ -129,7 +125,6 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
       computeAndSetActive();
     };
 
-    // Attach event listeners
     if (scroller === window) {
       window.addEventListener("scroll", onScroll, { passive: true });
     } else {
@@ -138,12 +133,10 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onResize);
 
-    // Initial activation
     computeAndSetActive();
     setTimeout(() => computeAndSetActive(), 120);
 
     return () => {
-      // Cleanup
       if (scroller === window) {
         window.removeEventListener("scroll", onScroll);
       } else if (scroller && scroller.removeEventListener) {
@@ -155,14 +148,12 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
     };
   }, [sections.length, isMobile]);
 
-  // Update container background when active section changes
   useEffect(() => {
     if (!containerRef.current) return;
     const idx = Math.max(0, Math.min(sections.length - 1, activeSection));
     containerRef.current.style.backgroundColor = backgroundColors[idx % backgroundColors.length];
   }, [activeSection, sections.length]);
 
-  // Handle modal expanded card open/escape key
   useEffect(() => {
     function onKeyDown(event) {
       if (event.key === "Escape") {
@@ -184,11 +175,9 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
 
   const currentCard = sections[activeSection]?.card;
 
-  // Desktop render function - with GSAP and sticky layout
   const renderDesktop = () => {
     return (
       <>
-        {/* LEFT Sticky Card (desktop only) */}
         <div className={cn("lg:sticky lg:top-60 h-fit w-[40dvw]", contentClassName)}>
           {currentCard ? (
             <motion.div
@@ -264,7 +253,6 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
           )}
         </div>
 
-        {/* RIGHT Text Panel - Desktop only */}
         <div className="relative flex items-start px-4">
           <div className="max-w-2xl">
             {sections.map((section, index) => (
@@ -311,7 +299,6 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
     );
   };
 
-  // Mobile render function - scrollable cards with description above
   const renderMobile = () => {
     return (
       <div className="flex flex-col space-y-8 w-full max-w-lg mx-auto">
@@ -321,7 +308,6 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
             className="flex flex-col justify-center items-center py-6"
             ref={(el) => (mobileSectionRefs.current[index] = el)}
           >
-            {/* Description above the card */}
             <div className="mb-6 text-center">
               <h2 className="text-2xl md:text-3xl font-bold text-slate-100 mb-4">
                 {section.title}
@@ -331,7 +317,6 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
               </p>
             </div>
 
-            {/* Card */}
             {section.card && (
               <div
                 onClick={() => setExpandedCard(section.card)}
@@ -385,7 +370,6 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
 
   return (
     <>
-      {/* Modal rendered via portal */}
       <OptimizedModal
         isOpen={!!expandedCard}
         onClose={() => setExpandedCard(null)}
@@ -393,7 +377,7 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
         id={id}
       />
 
-      <div ref={scrollerRef} className="h-full">
+      <div ref={scrollerRef} className="h-full" data-lenis-prevent>
         <div
           ref={containerRef}
           className="relative flex justify-center rounded-md p-4 lg:p-10 transition-colors duration-700"
