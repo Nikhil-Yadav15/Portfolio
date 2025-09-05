@@ -10,11 +10,9 @@ import { CardDemo } from "./BackgroundOverlayCard";
 import { OptimizedModal } from "./Modal";
 
 gsap.registerPlugin && gsap.registerPlugin(ScrollTrigger);
-
+const MOBILE_BREAKPOINT = 850;
 
 export function CombinedExpandableStickyScroll({ sections = [], contentClassName = "" }) {
-  const DEBUG = false; 
-
   const [activeSection, setActiveSection] = useState(0);
   const activeSectionRef = useRef(0);
   const [expandedCard, setExpandedCard] = useState(null);
@@ -24,7 +22,8 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
   const modalRef = useRef(null);
   const scrollerRef = useRef(null);
 
-  const desktopSectionRefs = useRef([]);
+  // Separate refs for desktop and mobile DOM elements
+  const desktopSectionRefs = useRef([]);  
   const mobileSectionRefs = useRef([]);
 
   const backgroundColors = [
@@ -35,6 +34,9 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
     "rgba(0,0,0,0)",
   ];
 
+  const isMobile = typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT;
+
+  // Keep the ref arrays trimmed to sections length
   useEffect(() => {
     desktopSectionRefs.current = desktopSectionRefs.current.slice(0, sections.length);
     mobileSectionRefs.current = mobileSectionRefs.current.slice(0, sections.length);
@@ -52,37 +54,31 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
     return closest || scrollerRef.current || window;
   };
 
-  const isDesktop = () => {
-    if (typeof window === "undefined") return true;
-    return window.matchMedia && window.matchMedia("(min-width: 1024px)").matches;
-  };
-
+  // GSAP and scroll logic - only for desktop
   useEffect(() => {
+    if (isMobile) return; // Skip GSAP logic on mobile devices
+
+    // Destroy any pre-existing GSAP ScrollTriggers
     try {
       if (ScrollTrigger && ScrollTrigger.getAll) {
         const old = ScrollTrigger.getAll();
         if (old && old.length) {
-          DEBUG && console.warn("Killing existing ScrollTrigger instances:", old.length);
           old.forEach((t) => t && t.kill && t.kill());
           ScrollTrigger.clearMatchMedia && ScrollTrigger.clearMatchMedia();
         }
       }
     } catch (e) {
-      console.log("");
+      // ignore if ScrollTrigger not present or any error
     }
-  }, []);
 
-  useEffect(() => {
     const scroller = getScrollContainer();
     if (!scroller) return;
 
     let ticking = false;
     let rafId = null;
 
-    const getRefsArray = () => (isDesktop() ? desktopSectionRefs.current : mobileSectionRefs.current);
-
     const computeAndSetActive = () => {
-      const refs = getRefsArray();
+      const refs = desktopSectionRefs.current;
       if (!refs || refs.length === 0) return;
 
       let scrollerTop = 0;
@@ -132,11 +128,8 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
     const onResize = () => {
       computeAndSetActive();
     };
-    const mm = window.matchMedia ? window.matchMedia("(min-width: 1024px)") : null;
-    const onMediaChange = () => {
-      requestAnimationFrame(() => computeAndSetActive());
-    };
 
+    // Attach event listeners
     if (scroller === window) {
       window.addEventListener("scroll", onScroll, { passive: true });
     } else {
@@ -144,12 +137,13 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
     }
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onResize);
-    mm && mm.addEventListener && mm.addEventListener("change", onMediaChange);
 
+    // Initial activation
     computeAndSetActive();
     setTimeout(() => computeAndSetActive(), 120);
 
     return () => {
+      // Cleanup
       if (scroller === window) {
         window.removeEventListener("scroll", onScroll);
       } else if (scroller && scroller.removeEventListener) {
@@ -157,18 +151,18 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
       }
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onResize);
-      mm && mm.removeEventListener && mm.removeEventListener("change", onMediaChange);
       if (rafId) cancelAnimationFrame(rafId);
     };
+  }, [sections.length, isMobile]);
 
-  }, [sections.length]);
-
+  // Update container background when active section changes
   useEffect(() => {
     if (!containerRef.current) return;
     const idx = Math.max(0, Math.min(sections.length - 1, activeSection));
     containerRef.current.style.backgroundColor = backgroundColors[idx % backgroundColors.length];
   }, [activeSection, sections.length]);
 
+  // Handle modal expanded card open/escape key
   useEffect(() => {
     function onKeyDown(event) {
       if (event.key === "Escape") {
@@ -190,8 +184,208 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
 
   const currentCard = sections[activeSection]?.card;
 
+  // Desktop render function - with GSAP and sticky layout
+  const renderDesktop = () => {
+    return (
+      <>
+        {/* LEFT Sticky Card (desktop only) */}
+        <div className={cn("lg:sticky lg:top-60 h-fit w-[40dvw]", contentClassName)}>
+          {currentCard ? (
+            <motion.div
+              layoutId={`card-${currentCard.title}-${id}`}
+              onClick={() => setExpandedCard(currentCard)}
+              className="group cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-black rounded-2xl"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="bg-gray-900/50 border border-purple-800/30 rounded-2xl overflow-hidden backdrop-blur-sm hover:border-purple-600/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-900/20">
+                <CardDemo
+                  src={currentCard.src}
+                  alt={currentCard.title}
+                  hoverGifUrl={currentCard.hoverGifUrl}
+                  containerClassName="relative rounded-t-2xl"
+                  cardClassName=""
+                  overlayClassName=""
+                />
+                <div className="p-6">
+                  <div className="mb-3">
+                    <motion.h3
+                      layoutId={`title-${currentCard.title}-${id}`}
+                      className="text-xl font-bold text-white mb-1 group-hover:text-purple-200 transition-colors"
+                    >
+                      {currentCard.title}
+                    </motion.h3>
+                    <motion.p
+                      layoutId={`description-${currentCard.description}-${id}`}
+                      className="text-purple-300 text-sm font-medium"
+                    >
+                      {currentCard.description}
+                    </motion.p>
+                  </div>
+                  <p className="text-gray-300 text-sm leading-relaxed mb-4 line-clamp-2">
+                    {currentCard.short || "Click to view full details..."}
+                  </p>
+                  {currentCard.tech && (
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                      {currentCard.tech.slice(0, 3).map((tech) => (
+                        <span
+                          key={tech}
+                          className="inline-flex items-center px-2 py-1 bg-purple-900/20 border border-purple-700/30 rounded-full text-xs text-purple-300"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                      {currentCard.tech.length > 3 && (
+                        <span className="inline-flex items-center px-2 py-1 bg-purple-900 border border-purple-700/30 rounded-full text-xs text-purple-300">
+                          +{currentCard.tech.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="flex items-center gap-1 text-xs text-purple-400">
+                      <ExternalLink size={12} />
+                      <span>View Project</span>
+                    </div>
+                    {currentCard.githubLink && (
+                      <div className="flex items-center gap-1 text-xs text-purple-400">
+                        <Github size={12} />
+                        <span>Source</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <div className="flex items-center justify-center h-64 text-white/40 border border-dashed border-gray-700 rounded-2xl">
+              <p>No project available</p>
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT Text Panel - Desktop only */}
+        <div className="relative flex items-start px-4">
+          <div className="max-w-2xl">
+            {sections.map((section, index) => (
+              <div
+                key={section.title + index}
+                className="min-h-screen flex flex-col justify-center py-20"
+                ref={(el) => (desktopSectionRefs.current[index] = el)}
+              >
+                <motion.h2
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{
+                    opacity: activeSection === index ? 1 : 0.35,
+                    y: activeSection === index ? 0 : 20,
+                  }}
+                  transition={{ duration: 0.45 }}
+                  className="text-3xl md:text-4xl font-bold text-slate-100 mb-6"
+                >
+                  {section.title}
+                </motion.h2>
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{
+                    opacity: activeSection === index ? 1 : 0.35,
+                    y: activeSection === index ? 0 : 20,
+                  }}
+                  transition={{ duration: 0.45, delay: 0.05 }}
+                  className="text-lg md:text-xl max-w-lg text-slate-300 leading-relaxed"
+                >
+                  {section.description}
+                </motion.p>
+                <motion.div
+                  initial={{ scaleX: 0 }}
+                  animate={{
+                    scaleX: activeSection === index ? 1 : 0,
+                  }}
+                  transition={{ duration: 0.6, delay: 0.08 }}
+                  className="h-1 bg-purple-500 rounded mt-8 origin-left max-w-xs"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  // Mobile render function - scrollable cards with description above
+  const renderMobile = () => {
+    return (
+      <div className="flex flex-col space-y-8 w-full max-w-lg mx-auto">
+        {sections.map((section, index) => (
+          <div
+            key={`mobile-${section.title}-${index}`}
+            className="flex flex-col justify-center items-center py-6"
+            ref={(el) => (mobileSectionRefs.current[index] = el)}
+          >
+            {/* Description above the card */}
+            <div className="mb-6 text-center">
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-100 mb-4">
+                {section.title}
+              </h2>
+              <p className="text-base text-slate-300 leading-relaxed px-4 max-w-md">
+                {section.description}
+              </p>
+            </div>
+
+            {/* Card */}
+            {section.card && (
+              <div
+                onClick={() => setExpandedCard(section.card)}
+                className="cursor-pointer w-full max-w-sm rounded-2xl overflow-hidden bg-gray-900 border border-purple-800/30 backdrop-blur-sm hover:border-purple-600/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-900/20"
+              >
+                <CardDemo
+                  src={section.card.src}
+                  alt={section.card.title}
+                  hoverGifUrl={section.card.hoverGifUrl}
+                  containerClassName="relative aspect-video overflow-hidden rounded-t-2xl"
+                  cardClassName=""
+                  overlayClassName=""
+                />
+                <div className="p-4">
+                  <h4 className="text-lg font-bold text-white mb-2">{section.card.title}</h4>
+                  <p className="text-gray-300 text-sm leading-relaxed mb-4 line-clamp-3">
+                    {section.card.short || "Tap to view full details..."}
+                  </p>
+                  {section.card.tech && (
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                      {section.card.tech.map((tech) => (
+                        <span
+                          key={tech}
+                          className="inline-flex items-center px-2 py-1 bg-purple-900/20 border border-purple-700/30 rounded-full text-xs text-purple-300"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3 text-xs text-purple-400">
+                    <div className="flex items-center gap-1">
+                      <ExternalLink size={12} />
+                      <span>Tap to explore</span>
+                    </div>
+                    {section.card.githubLink && (
+                      <div className="flex items-center gap-1">
+                        <Github size={12} />
+                        <span>Source</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <>
+      {/* Modal rendered via portal */}
       <OptimizedModal
         isOpen={!!expandedCard}
         onClose={() => setExpandedCard(null)}
@@ -199,217 +393,13 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
         id={id}
       />
 
-      {DEBUG && (
-        <div style={{ position: "fixed", right: 12, top: 12, zIndex: 9999, background: "#0008", color: "#fff", padding: 8, borderRadius: 6 }}>
-          <div>DEBUG</div>
-          <div>active: {activeSectionRef.current}</div>
-        </div>
-      )}
-
       <div ref={scrollerRef} className="h-full">
         <div
           ref={containerRef}
-          className="relative flex flex-col lg:flex-row justify-center lg:space-x-10 rounded-md p-4 lg:p-10 transition-colors duration-700"
+          className="relative flex justify-center rounded-md p-4 lg:p-10 transition-colors duration-700"
           style={{ backgroundColor: backgroundColors[activeSection % backgroundColors.length] }}
         >
-          <div
-            className={cn("lg:sticky lg:top-60 h-fit hidden lg:block w-[40dvw]", contentClassName)}
-          >
-            {currentCard ? (
-              <motion.div
-                layoutId={`card-${currentCard.title}-${id}`}
-                onClick={() => setExpandedCard(currentCard)}
-                className="group cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-black rounded-2xl"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <div className="bg-gray-900/50 border border-purple-800/30 rounded-2xl overflow-hidden backdrop-blur-sm hover:border-purple-600/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-900/20">
-                  <CardDemo
-                    src={currentCard.src}
-                    alt={currentCard.title}
-                    hoverGifUrl={currentCard.hoverGifUrl}
-                    containerClassName="relative rounded-t-2xl"
-                    cardClassName=""
-                    overlayClassName=""
-                  />
-
-                  <div className="p-6">
-                    <div className="mb-3">
-                      <motion.h3
-                        layoutId={`title-${currentCard.title}-${id}`}
-                        className="text-xl font-bold text-white mb-1 group-hover:text-purple-200 transition-colors"
-                      >
-                        {currentCard.title}
-                      </motion.h3>
-                      <motion.p
-                        layoutId={`description-${currentCard.description}-${id}`}
-                        className="text-purple-300 text-sm font-medium"
-                      >
-                        {currentCard.description}
-                      </motion.p>
-                    </div>
-
-                    <p className="text-gray-300 text-sm leading-relaxed mb-4 line-clamp-2">
-                      {currentCard.short || "Click to view full details..."}
-                    </p>
-
-                    {currentCard.tech && (
-                      <div className="flex flex-wrap gap-1.5 mb-4">
-                        {currentCard.tech.slice(0, 3).map((tech) => (
-                          <span
-                            key={tech}
-                            className="inline-flex items-center px-2 py-1 bg-purple-900/20 border border-purple-700/30 rounded-full text-xs text-purple-300"
-                          >
-                            {tech}
-                          </span>
-                        ))}
-                        {currentCard.tech.length > 3 && (
-                          <span className="inline-flex items-center px-2 py-1 bg-purple-900 border border-purple-700/30 rounded-full text-xs text-purple-300">
-                            +{currentCard.tech.length - 3} more
-                          </span>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="flex items-center gap-1 text-xs text-purple-400">
-                        <ExternalLink size={12} />
-                        <span>View Project</span>
-                      </div>
-                      {currentCard.githubLink && (
-                        <div className="flex items-center gap-1 text-xs text-purple-400">
-                          <Github size={12} />
-                          <span>Source</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ) : (
-              <div className="flex items-center justify-center h-64 text-white/40 border border-dashed border-gray-700 rounded-2xl">
-                <p>No project available</p>
-              </div>
-            )}
-          </div>
-          <div className="relative hidden lg:flex items-start px-4">
-            <div className="max-w-2xl">
-              {sections.map((section, index) => (
-                <div
-                  key={section.title + index}
-                  className="min-h-screen flex flex-col justify-center py-20"
-                  ref={(el) => (desktopSectionRefs.current[index] = el)}
-                >
-                  {DEBUG && <div style={{ position: "absolute", left: -16, top: "50%", transform: "translateY(-50%)", width: 6, height: 6, background: index === activeSection ? "cyan" : "#444", borderRadius: 999 }} />}
-
-                  <motion.h2
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{
-                      opacity: activeSection === index ? 1 : 0.35,
-                      y: activeSection === index ? 0 : 20,
-                    }}
-                    transition={{ duration: 0.45 }}
-                    className="text-3xl md:text-4xl font-bold text-slate-100 mb-6"
-                  >
-                    {section.title}
-                  </motion.h2>
-                  <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{
-                      opacity: activeSection === index ? 1 : 0.35,
-                      y: activeSection === index ? 0 : 20,
-                    }}
-                    transition={{ duration: 0.45, delay: 0.05 }}
-                    className="text-lg md:text-xl max-w-lg text-slate-300 leading-relaxed"
-                  >
-                    {section.description}
-                  </motion.p>
-
-                  <motion.div
-                    initial={{ scaleX: 0 }}
-                    animate={{
-                      scaleX: activeSection === index ? 1 : 0,
-                    }}
-                    transition={{ duration: 0.6, delay: 0.08 }}
-                    className="h-1 bg-purple-500 rounded mt-8 origin-left max-w-xs"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex flex-col space-y-6 lg:hidden w-full max-w-sm mx-auto">
-            {sections.map((section, index) => (
-              <div
-                key={`mobile-${section.title}-${index}`}
-                className="min-h-screen flex items-center justify-center py-10"
-                ref={(el) => (mobileSectionRefs.current[index] = el)}
-              >
-                {section.card && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{
-                      opacity: activeSection === index ? 1 : 0.6,
-                      scale: activeSection === index ? 1 : 0.95,
-                    }}
-                    transition={{ duration: 0.5 }}
-                    onClick={() => setExpandedCard(section.card)}
-                    className="group cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-black rounded-2xl w-full"
-                  >
-                    <div className="bg-gray-900 border border-purple-800/30 rounded-2xl overflow-hidden backdrop-blur-sm hover:border-purple-600/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-900/20">
-                      <CardDemo
-                        src={section.card.src}
-                        alt={section.card.title}
-                        hoverGifUrl={section.card.hoverGifUrl}
-                        containerClassName="relative aspect-video overflow-hidden rounded-t-2xl"
-                        cardClassName=""
-                        overlayClassName=""
-                      />
-
-                      <div className="p-4">
-                        <h4 className="text-lg font-bold text-white mb-2">{section.card.title}</h4>
-
-                        <p className="text-gray-300 text-sm leading-relaxed mb-4 line-clamp-2">
-                          {section.card.short || "Tap to view full details..."}
-                        </p>
-
-                        {section.card.tech && (
-                          <div className="flex flex-wrap gap-1.5 mb-4">
-                            {section.card.tech.slice(0, 4).map((tech) => (
-                              <span
-                                key={tech}
-                                className="inline-flex items-center px-2 py-1 bg-purple-900/20 border border-purple-700/30 rounded-full text-xs text-purple-300"
-                              >
-                                {tech}
-                              </span>
-                            ))}
-                            {section.card.tech.length > 4 && (
-                              <span className="inline-flex items-center px-2 py-1 bg-purple-900/20 border border-purple-700/30 rounded-full text-xs text-purple-300">
-                                +{section.card.tech.length - 4}
-                              </span>
-                            )}
-                          </div>
-                        )}
-
-                        <div className="flex items-center gap-3 text-xs text-purple-400">
-                          <div className="flex items-center gap-1">
-                            <ExternalLink size={12} />
-                            <span>Tap to explore</span>
-                          </div>
-                          {section.card.githubLink && (
-                            <div className="flex items-center gap-1">
-                              <Github size={12} />
-                              <span>Source</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-            ))}
-          </div>
+          {isMobile ? renderMobile() : renderDesktop()}
         </div>
       </div>
     </>
