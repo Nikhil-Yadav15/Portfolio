@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion } from "framer-motion";
 import { memo } from "react";
 
 const staggerTimings = {
@@ -9,6 +9,7 @@ const staggerTimings = {
   word: 0.05,
   character: 0.03,
   line: 0.06,
+  smartWrap: 0.12,
 };
 
 const defaultContainerVariants = {
@@ -247,6 +248,7 @@ const TextAnimateBase = ({
   by = "word",
   animation = "fadeIn",
   accessible = true,
+  maxWordsPerLine = 6,
   ...props
 }) => {
   const MotionComponent = motion.create(Component);
@@ -261,6 +263,14 @@ const TextAnimateBase = ({
       break;
     case "line":
       segments = children.split("\n");
+      break;
+    case "smartWrap":
+      const words = children.split(/\s+/).filter(word => word.length > 0);
+      const lines = [];
+      for (let i = 0; i < words.length; i += maxWordsPerLine) {
+        lines.push(words.slice(i, i + maxWordsPerLine).join(" "));
+      }
+      segments = lines;
       break;
     case "text":
     default:
@@ -298,13 +308,13 @@ const TextAnimateBase = ({
               ...defaultItemAnimationVariants[animation].container.show,
               transition: {
                 delayChildren: delay,
-                staggerChildren: duration / segments.length,
+                staggerChildren: staggerTimings[by] || 0.05,
               },
             },
             exit: {
               ...defaultItemAnimationVariants[animation].container.exit,
               transition: {
-                staggerChildren: duration / segments.length,
+                staggerChildren: staggerTimings[by] || 0.05,
                 staggerDirection: -1,
               },
             },
@@ -331,9 +341,9 @@ const TextAnimateBase = ({
           <motion.span
             key={`${by}-${segment}-${i}`}
             variants={finalVariants.item}
-            custom={i * staggerTimings[by]}
+            custom={i * (staggerTimings[by] || 0.05)}
             className={cn(
-              by === "line" ? "block" : "inline-block whitespace-pre",
+              by === "line" || by === "smartWrap" ? "block" : "inline-block whitespace-pre",
               by === "character" && "",
               segmentClassName,
             )}
@@ -347,5 +357,4 @@ const TextAnimateBase = ({
   );
 };
 
-// Export the memoized version
 export const TextAnimate = memo(TextAnimateBase);
