@@ -20,7 +20,6 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger, useGSAP);
 }
 
-// Only preload blackhole model
 useGLTF.preload('/blackhole_compress.glb');
 
 export default function GlassBreakPage() {
@@ -110,7 +109,6 @@ export default function GlassBreakPage() {
         })
         .catch(error => {
           console.warn(`Model file check failed for ${src}:`, error);
-          // Continue anyway, maybe the file exists but HEAD request fails
           const loader = new GLTFLoader();
           loader.load(
             src,
@@ -134,7 +132,7 @@ export default function GlassBreakPage() {
           if (!response.ok) {
             throw new Error(`Failed to fetch Spline scene: ${src} - ${response.status}`);
           }
-          return response.text(); // This actually downloads and caches the scene
+          return response.text(); 
         })
         .then(() => {
           console.log(`Spline scene preloaded: ${src}`);
@@ -252,7 +250,6 @@ export default function GlassBreakPage() {
     setSceneState(prev => ({ ...prev, current: 'glass', transitioning: false }));
   }, [deleteAllFragments]);
 
-  // Asset preloading effect - UPDATED TO REMOVE DEMO STAGES
   useEffect(() => {
     if (!isHydrated) return;
     
@@ -272,14 +269,14 @@ export default function GlassBreakPage() {
 
     const loadAssets = async () => {
       try {
-        // Stage 1: Load critical assets
+        // critical assets
         setPreloadStage('critical-assets');
         const criticalAssets = getCriticalAssets();
         await preloadAssets(criticalAssets, (progress) => {
-          setAssetLoadingProgress(progress * 0.3); // 30% for critical assets
+          setAssetLoadingProgress(progress * 0.3); // 30% 
         });
 
-        // Stage 2: Load models (with error handling)
+        // Load models 
         setPreloadStage('models');
         const modelAssets = PORTFOLIO_ASSETS.MODELS.filter(model => {
           const validModels = ['/blackhole_compress.glb'];
@@ -288,7 +285,7 @@ export default function GlassBreakPage() {
         
         if (modelAssets.length > 0) {
           await preloadAssets(modelAssets, (progress) => {
-            setAssetLoadingProgress(30 + (progress * 0.2)); // 20% for models
+            setAssetLoadingProgress(30 + (progress * 0.2)); // 20% 
           });
         } else {
           setAssetLoadingProgress(50);
@@ -304,10 +301,9 @@ export default function GlassBreakPage() {
         ];
         
         await preloadAssets(remainingAssets, (progress) => {
-          setAssetLoadingProgress(50 + (progress * 0.5)); // 50% for remaining assets
+          setAssetLoadingProgress(50 + (progress * 0.5)); // 50% 
         });
 
-        // Mark assets as loaded and DIRECTLY COMPLETE LOADING
         localStorage.setItem('assetspreloaded', 'true');
         
         setSceneState(prev => ({ 
@@ -316,21 +312,18 @@ export default function GlassBreakPage() {
           modelsLoaded: true 
         }));
 
-        // DIRECTLY GO TO HERO MOUNT - NO DEMO STAGES
         resetAnimationStates();
         setHeroMounted(true);
         setPreloadComplete(true);
         
       } catch (error) {
         console.error('Asset preloading failed:', error);
-        // Continue anyway
         setSceneState(prev => ({ 
           ...prev, 
           assetsLoaded: true,
           modelsLoaded: true 
         }));
         
-        // DIRECTLY GO TO HERO MOUNT EVEN ON ERROR
         resetAnimationStates();
         setHeroMounted(true);
         setPreloadComplete(true);
@@ -485,7 +478,7 @@ export default function GlassBreakPage() {
     
   }, [isHydrated, heroMounted, showMainContent, fragmentsGenerated, crackLines]);
 
-  // COMPLETE GSAP TIMELINE
+  //  GSAP TIMELINE
   useGSAP(() => {
     if (toNavigate !== null && currentSection === "hero") {
       return;
@@ -552,14 +545,12 @@ export default function GlassBreakPage() {
             setStartBlackHoleAutoScale(true);
           }
 
-          // Direct transition to main content
           if (!showMainContent && !autoTransitionTriggered) {
             if (currentProgress >= 0.88) {
               deleteAllFragments();
               setHeroMounted(false);
               setAutoTransitionTriggered(true);
               
-              // Direct transition to main content with delay
               setTimeout(() => {
                 if (blackHoleCanvasRef.current) {
                   blackHoleCanvasRef.current.style.display = 'none';
@@ -830,7 +821,6 @@ export default function GlassBreakPage() {
     return `polygon(${points.join(', ')})`;
   };
 
-  // SIMPLIFIED LOADER - NO DEMO STAGES
   if (!preloadComplete) {
     return (
       <div className="h-[100dvh] z-41 bg-black flex items-center justify-center relative">
