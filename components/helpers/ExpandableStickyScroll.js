@@ -254,7 +254,7 @@ export function CombinedExpandableStickyScroll({ sections = [], contentClassName
         </div>
 
         <div className="relative flex items-start px-4">
-          <div className="max-w-2xl">
+          <div className="max-w-2xl pl-15">
             {sections.map((section, index) => (
               <div
                 key={section.title + index}
