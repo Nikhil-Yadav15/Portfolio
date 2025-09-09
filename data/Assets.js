@@ -1,7 +1,4 @@
-// data/Assets.js
-
 export const PORTFOLIO_ASSETS = () => ({
-  // High priority (critical for initial render)
   HIGH_PRIORITY: [
     { src: "/avatar-animated.gif", type: "image", priority: "high" },
     { src: "/coder.webp", type: "image", priority: "high" },
