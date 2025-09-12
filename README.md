@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+# Portfolio 🌌✨
 
-First, run the development server:
+A modern, interactive portfolio built with **Next.js 15**, **React 19**, and a creative mix of **3D graphics, animations, and smooth UI components**. This project highlights projects, skills, and experiences with immersive visuals and dynamic interactions.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ✨ Highlights
+- **Framework**: Next.js 15 (App Router) with Turbopack ⚡
+- **UI Styling**: Tailwind CSS 4, custom animations, shimmer buttons, gradient text 🎨
+- **3D & Physics**: React Three Fiber, Drei, Cannon, OGL, and GSAP physics-driven effects 🌌
+- **Animations**: Framer Motion, Lenis smooth scroll, typewriter and scramble text effects ✍️
+- **Contact**: Integrated email system via Nodemailer and EmailJS 📧
+- **Responsive**: Optimized layouts for desktop, tablet, and mobile 📱
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🧩 Features
+- **Hero Section 🚀**: Dynamic introduction with 3D elements and animated text.
+- **About Section 👤**: Showcases background, skills, and career highlights.
+- **Projects Gallery 🖼️**: Interactive cards with hover effects and previews.
+- **Tech Stack ⚙️**: Animated display of tools and technologies.
+- **Contact Section 📬**: Form validation with React Hook Form, Zod, and email delivery.
+- **UI Effects ✨**: Neon spotlight cards, Aurora waves, canvas reveal, particle shaders, and decrypted text transitions.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🛠 Tech Stack
+- **Core**: Next.js 15, React 19, Tailwind CSS 4, TypeScript
+- **3D & Animations**: React Three Fiber, Drei, Cannon, OGL, React Spring, GSAP, Framer Motion, Lenis
+- **UI & Components**: Radix UI, Tabler & Lucide Icons, shimmer-button, blur-text, gradient-text
+- **Forms & Validation**: React Hook Form, Zod, @hookform/resolvers
+- **Email & Notifications**: EmailJS, Nodemailer, React Hot Toast
+- **Utilities**: clsx, tailwind-merge, class-variance-authority
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📂 Directory Overview
+- **app/** → Layout, global styles, API routes (e.g., `/api/contact`).
+- **components/page/** → Core sections like Hero, About, Projects, TechStack, Contact.
+- **components/ui/** → Reusable effects: text animations, spotlight cards, shader backgrounds, loaders.
+- **components/scenes/** → 3D models & physics (BlackHole, CannonGlassBreak, Spacedrive).
+- **components/helpers/** → Utility components like Modals, Scroll effects, Overlays.
+- **components/contexts/** → Navigation context for managing active sections.
+- **data/** → Static project data, tech stacks, and asset references.
+- **hooks/** → Custom React hooks (e.g., `use-mobile`).
+- **lib/** → Utility helpers (e.g., `utils.ts`).
+- **public/** → Project images and assets.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
