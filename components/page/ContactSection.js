@@ -133,7 +133,7 @@ const InputGroup = ({ label, id, error, children }) => {
     <div className="space-y-2 relative">
       <label
         htmlFor={id}
-        className="text-xs font-semibold tracking-[0.2em] text-purple-200/60 uppercase ml-1"
+        className="text-xs font-semibold tracking-[0.2em] text-white uppercase ml-1"
       >
         {label}
       </label>
@@ -214,7 +214,7 @@ export default function ContactSection() {
 
   return (
     // Changed min-h-screen to min-h-[100dvh] for mobile browsers
-    <section data-lenis-prevent className="relative w-full min-h-[100dvh] flex flex-col items-center justify-center overflow-hidden bg-black/35 selection:bg-purple-500/30">
+    <section data-lenis-prevent className="relative w-full min-h-[100dvh] flex flex-col items-center justify-center overflow-hidden bg-black/10 selection:bg-purple-500/30">
       
       {/* 1. Dynamic Background */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#030014] to-[#030014] z-0" />
