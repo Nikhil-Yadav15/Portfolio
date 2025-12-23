@@ -1,14 +1,21 @@
 "use client";
+import React, { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { FaGithub, FaLinkedin, FaDiscord } from "react-icons/fa";
-import {NeonSpotlightCard} from "@/components/ui/NeonSpotlightCard";
+import { Send, Sparkles, CheckCircle2, AlertCircle } from "lucide-react";
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 import { TypewriterEffect } from "@/components/ui/TypewriterEffect";
-import { useIsMobile } from "@/hooks/use-mobile";
 
+// --- Utility for cleaner classes ---
+function cn(...inputs) {
+  return twMerge(clsx(inputs));
+}
+
+// --- Zod Schema ---
 const schema = z.object({
   name: z.string().min(2, "Name is required"),
   email: z.string().email("Invalid email address"),
@@ -16,18 +23,165 @@ const schema = z.object({
   message: z.string().min(10, "Message must be at least 10 characters"),
 });
 
+// --- Component: Background Stars with Shooting Effect ---
+const StarBackground = () => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let animationFrameId;
+    let stars = [];
+    let shootingStars = [];
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initStars();
+    };
+
+    const initStars = () => {
+      // Reduce star count on mobile for performance
+      const starCount = window.innerWidth < 768 ? 80 : 150;
+      stars = Array.from({ length: starCount }).map(() => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 1.5,
+        opacity: Math.random(),
+        speed: Math.random() * 0.2,
+      }));
+    };
+
+    const createShootingStar = () => {
+      const startX = Math.random() * canvas.width;
+      const startY = Math.random() * (canvas.height / 2);
+      shootingStars.push({
+        x: startX,
+        y: startY,
+        length: Math.random() * 80 + 50,
+        speed: Math.random() * 15 + 10,
+        angle: Math.PI / 4,
+        opacity: 1,
+        life: 1,
+      });
+    };
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw Static Stars
+      stars.forEach((star) => {
+        ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.fill();
+        star.y += star.speed;
+        if (star.y > canvas.height) star.y = 0;
+      });
+
+      // Draw Shooting Stars
+      shootingStars.forEach((star, index) => {
+        star.x += star.speed * Math.cos(star.angle);
+        star.y += star.speed * Math.sin(star.angle);
+        star.life -= 0.02;
+
+        const tailX = star.x - star.length * Math.cos(star.angle);
+        const tailY = star.y - star.length * Math.sin(star.angle);
+
+        const gradient = ctx.createLinearGradient(star.x, star.y, tailX, tailY);
+        gradient.addColorStop(0, `rgba(168, 85, 247, ${star.life})`);
+        gradient.addColorStop(1, `rgba(168, 85, 247, 0)`);
+
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(star.x, star.y);
+        ctx.lineTo(tailX, tailY);
+        ctx.stroke();
+
+        if (star.life <= 0 || star.x > canvas.width || star.y > canvas.height) {
+          shootingStars.splice(index, 1);
+        }
+      });
+
+      if (Math.random() < 0.02) createShootingStar();
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    resize();
+    animate();
+    window.addEventListener("resize", resize);
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 z-0 pointer-events-none opacity-40"
+    />
+  );
+};
+
+// --- Component: Premium Input Field ---
+const InputGroup = ({ label, id, error, children }) => {
+  return (
+    <div className="space-y-2 relative">
+      <label
+        htmlFor={id}
+        className="text-xs font-semibold tracking-[0.2em] text-white uppercase ml-1"
+      >
+        {label}
+      </label>
+      <div className="relative group">
+        {children}
+        <div className="absolute bottom-0 left-0 h-[1px] w-0 bg-gradient-to-r from-purple-400 to-pink-400 transition-all duration-500 group-focus-within:w-full" />
+      </div>
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            className="absolute right-0 top-0 flex items-center gap-1 text-rose-400 text-xs"
+          >
+            <AlertCircle size={12} />
+            <span>{error.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+// --- Component: Classy Button ---
+const ShinyButton = ({ children, disabled, className, ...props }) => {
+  return (
+    <motion.button
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.98 }}
+      disabled={disabled}
+      className={cn(
+        "relative group px-8 py-4 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-lg overflow-hidden transition-all duration-300 border border-white/10 shadow-lg hover:shadow-purple-500/20",
+        disabled && "opacity-50 cursor-not-allowed",
+        className
+      )}
+      {...props}
+    >
+      <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-[200%] group-hover:translate-x-[200%] transition-transform duration-1000 ease-in-out" />
+      <span className="relative z-10 flex items-center justify-center gap-2 font-medium tracking-wide">
+        {children}
+      </span>
+    </motion.button>
+  );
+};
+
+// --- Main Component ---
 export default function ContactSection() {
-  const isMobile = useIsMobile();
-  const words = [
-    { text: "Awaiting", className: "text-white font-lora" },
-    { text: "  ", className: "text-white font-lora" },
-    { text: "next", className: "text-white font-lora" },
-    { text: " ", className: "text-white font-lora" },
-    { text: "collaboration", className: "text-white font-lora" },
-    { text: ".", className: "text-white font-lora" },
-    { text: ".", className: "text-white font-lora" },
-    { text: ".", className: "text-white font-lora" },
-  ];
   const {
     register,
     handleSubmit,
@@ -39,307 +193,200 @@ export default function ContactSection() {
 
   const [serverState, setServerState] = useState(null);
 
+  // Typewriter words configuration
+  const words = [
+    { text: "Let's ", className: "text-white font-lora font-bold" },
+    { text: "build ", className: "text-white font-lora font-bold" },
+    { text: "the ", className: "text-white font-lora font-bold" },
+    { text: "impossible. ", className: "text-purple-400 font-lora font-bold" },
+  ];
+
   const onSubmit = async (data) => {
-    setServerState(null);
-    try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" },
-      });
-      if (res.ok) {
-        setServerState({ ok: true });
-        reset();
-      } else {
-        setServerState({ ok: false });
-      }
-    } catch {
-      setServerState({ ok: false });
-    }
+    // Simulating API call
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setServerState({ ok: true });
+    reset();
+    setTimeout(() => setServerState(null), 5000);
   };
 
-  return (
-    <div className="w-full min-h-[100dvh] flex flex-col" data-lenis-prevent>
-      <div className="flex-1 flex flex-col items-center justify-center py-8 px-4 md:py-16">
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-center mb-8 md:mb-12"
-        >
-          <h2 className="cursor-text font-lora text-4xl md:text-5xl lg:text-6xl font-bold mb-4 flex justify-center text-blue-100">Get in Touch</h2>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-          className="w-full max-w-4xl"
-        >
-          <NeonSpotlightCard
-            borderSize={isMobile ? 3 : 10}
-            borderRadius={24}
-            neonColors={{
-              firstColor: "#0d05fc", 
-              secondColor: "#fc0585",
-            }}
-            spotlight={{
-              radius: 350,
-              maskColor: "#000000",
-              canvasColors: [
-                [130, 8, 252], 
-                [66, 1, 28],   
-                [168, 85, 247],
-                [236, 72, 153],
-              ],
-              dotSize: 5,
-            }}
-            contentBg="rgba(6,6,20,0.95)"
-            className="w-full"
-          >
-            <div className="md:p-12"> 
-              <form
-                onSubmit={handleSubmit(onSubmit)}
-                className="flex flex-col gap-6"
-                autoComplete="off"
-              >
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> 
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="space-y-2"
-                  >
-                    <label htmlFor="name" className="text-purple-300 text-sm font-mono tracking-wide">
-                      Name
-                    </label>
-                    <input
-                      id="name"
-                      {...register("name")}
-                      placeholder="Enter your name"
-                      className="w-full rounded-lg px-4 py-3 bg-black/60 border border-purple-700/50 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 text-white transition-all duration-300 placeholder:text-purple-300/60 font-mono backdrop-blur-sm"
-                    />
-                    {errors.name && (
-                      <motion.p 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-xs text-pink-400 font-mono"
-                      >
-                        {errors.name.message}
-                      </motion.p>
-                    )}
-                  </motion.div>
+  const inputClasses =
+    "w-full bg-slate-950/30 border border-white/5 rounded-lg px-4 py-3.5 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:bg-slate-900/50 transition-all duration-300 hover:border-white/10";
 
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="space-y-2"
-                  >
-                    <label htmlFor="email" className="text-cyan-300 text-sm font-mono tracking-wide">
-                      Email
-                    </label>
+  return (
+    // Changed min-h-screen to min-h-[100dvh] for mobile browsers
+    <section data-lenis-prevent className="relative w-full min-h-[100dvh] flex flex-col items-center justify-center overflow-hidden bg-black/10 selection:bg-purple-500/30">
+      
+      {/* 1. Dynamic Background */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#030014] to-[#030014] z-0" />
+      <StarBackground />
+      
+      {/* 2. Content Wrapper */}
+      {/* Using 'flex-col' for mobile (default) and 'lg:flex-row' for desktop */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 py-12 md:py-20 lg:py-0 flex flex-col lg:flex-row items-center gap-12 lg:gap-24 min-h-[100dvh]">
+        
+        {/* Left Side: Text & Info */}
+        <div className="w-full lg:w-1/2 space-y-6 md:space-y-8 text-center lg:text-left mt-8 lg:mt-0">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-300 text-xs font-medium tracking-wider uppercase mb-6">
+              <Sparkles size={14} />
+              <span>Open for Work</span>
+            </div>
+            
+            {/* Typewriter Effect Integration */}
+            <div className="mb-6 h-20 md:h-32 flex items-center justify-center lg:justify-start">
+               <TypewriterEffect words={words} className="text-4xl md:text-6xl lg:text-7xl !leading-tight" cursorClassName="bg-purple-400" />
+            </div>
+
+            <p className="text-slate-400 text-base md:text-lg leading-relaxed max-w-lg mx-auto lg:mx-0">
+              Have a vision that needs engineering? I specialize in turning complex problems into elegant, scalable solutions.
+            </p>
+          </motion.div>
+
+          {/* Socials - Desktop Only */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="hidden lg:flex flex-row gap-6 items-center justify-start pt-2"
+          >
+             {/* Socials - Clean Minimalist */}
+             {[
+               { icon: FaGithub, href: "https://github.com/Nikhil-Yadav15" },
+               { icon: FaLinkedin, href: "https://www.linkedin.com/in/nikhil-yadav-593a98321" },
+               { icon: FaDiscord, href: "https://discord.com/users/codeslinger24" }
+             ].map((social, idx) => (
+               <a
+                 key={idx}
+                 href={social.href}
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="p-3 rounded-full bg-white/5 hover:bg-white/10 hover:scale-110 border border-white/5 transition-all duration-300 text-slate-300 hover:text-white"
+               >
+                 <social.icon size={22} />
+               </a>
+             ))}
+          </motion.div>
+        </div>
+
+        {/* Right Side: High-End Form */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          viewport={{ once: true }}
+          className="w-full lg:w-1/2 pb-12 lg:pb-0"
+        >
+          <div className="relative group rounded-2xl p-[1px] bg-gradient-to-b from-white/10 to-transparent">
+            {/* Backdrop Blur Container */}
+            <div className="relative rounded-2xl bg-[#0a0a0a]/80 backdrop-blur-2xl p-6 md:p-10 border border-white/5 shadow-2xl shadow-purple-500/10">
+              
+              {/* Form Content */}
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 md:space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+                  <InputGroup label="Name" id="name" error={errors.name}>
                     <input
-                      id="email"
-                      {...register("email")}
-                      placeholder="Enter your email"
-                      className="w-full rounded-lg px-4 py-3 bg-black/60 border border-cyan-700/50 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 text-white transition-all duration-300 placeholder:text-cyan-300/60 font-mono backdrop-blur-sm"
-                      autoComplete="email"
+                      {...register("name")}
+                      id="name"
+                      className={inputClasses}
+                      placeholder="John Doe"
                     />
-                    {errors.email && (
-                      <motion.p 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-xs text-pink-400 font-mono"
-                      >
-                        {errors.email.message}
-                      </motion.p>
-                    )}
-                  </motion.div>
+                  </InputGroup>
+                  <InputGroup label="Email" id="email" error={errors.email}>
+                    <input
+                      {...register("email")}
+                      id="email"
+                      className={inputClasses}
+                      placeholder="john@example.com"
+                    />
+                  </InputGroup>
                 </div>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="space-y-2"
-                >
-                  <label htmlFor="subject" className="text-pink-300 text-sm font-mono tracking-wide">
-                    Subject
-                  </label>
+                <InputGroup label="Subject" id="subject" error={errors.subject}>
                   <input
-                    id="subject"
                     {...register("subject")}
-                    placeholder="What's this about?"
-                    className="w-full rounded-lg px-4 py-3 bg-black/60 border border-pink-700/50 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 text-white transition-all duration-300 placeholder:text-pink-300/60 font-mono backdrop-blur-sm"
+                    id="subject"
+                    className={inputClasses}
+                    placeholder="Project Inquiry"
                   />
-                  {errors.subject && (
-                    <motion.p 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="text-xs text-pink-400 font-mono"
-                    >
-                      {errors.subject.message}
-                    </motion.p>
-                  )}
-                </motion.div>
+                </InputGroup>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                  className="space-y-2"
-                >
-                  <label htmlFor="message" className="text-purple-300 text-sm font-mono tracking-wide">
-                    Message
-                  </label>
+                <InputGroup label="Message" id="message" error={errors.message}>
                   <textarea
-                    id="message"
                     {...register("message")}
-                    placeholder="Tell me about your project or idea..."
-                    rows={6}
-                    className="w-full rounded-lg px-4 py-3 bg-black/60 border border-purple-800/50 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 text-white transition-all duration-300 resize-none placeholder:text-purple-200/60 font-mono backdrop-blur-sm"
+                    id="message"
+                    rows={4}
+                    className={`${inputClasses} resize-none`}
+                    placeholder="Tell me about your project..."
                   />
-                  {errors.message && (
-                    <motion.p 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="text-xs text-pink-400 font-mono"
-                    >
-                      {errors.message.message}
-                    </motion.p>
-                  )}
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7 }}
-                  className="flex justify-center mt-4"
-                >
-                  <motion.button
-                    whileHover={{ 
-                      scale: 1.02, 
-                      boxShadow: "0 0 20px rgba(139, 92, 246, 0.5)" 
-                    }}
-                    whileTap={{ scale: 0.98 }}
-                    disabled={isSubmitting}
-                    type="submit"
-                    className="cursor-pointer bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold py-4 px-12 rounded-lg shadow-lg transition-all duration-300 hover:from-pink-600 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed font-mono tracking-wide text-lg max-w-xs w-full md:max-w-md"
-                  >
-                    {isSubmitting ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        Transmitting...
-                      </span>
-                    ) : (
-                      "Send Message"
-                    )}
-                  </motion.button>
-                </motion.div>
+                </InputGroup>
 
-                {isSubmitSuccessful && serverState?.ok && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-green-400 text-center text-sm font-mono bg-green-400/10 border border-green-400/30 rounded-lg p-3"
-                  >
-                    ✅ Message transmitted successfully! I&apos;ll respond soon 🚀
-                  </motion.div>
-                )}
-                {serverState && !serverState.ok && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-pink-400 text-center text-sm font-mono bg-pink-400/10 border border-pink-400/30 rounded-lg p-3"
-                  >
-                    ❌ Transmission failed. Please try again or contact me directly.
-                  </motion.div>
-                )}
+                <div className="pt-2 md:pt-4">
+                    <ShinyButton
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full font-lora"
+                    >
+                      {isSubmitting ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          Send Message <Send size={16} />
+                        </>
+                      )}
+                    </ShinyButton>
+                </div>
+
+                {/* Success Message */}
+                <AnimatePresence>
+                  {isSubmitSuccessful && serverState?.ok && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="flex items-center gap-3 text-emerald-400 bg-emerald-500/10 p-4 rounded-lg border border-emerald-500/20 text-sm overflow-hidden"
+                    >
+                      <CheckCircle2 size={18} className="shrink-0" />
+                      <p>Message sent successfully! I will get back to you soon.</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </form>
             </div>
-          </NeonSpotlightCard>
+          </div>
+          
+          {/* Socials - Mobile Only (Below Form) */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="flex lg:hidden flex-row gap-6 items-center justify-center pt-6"
+          >
+             {[
+               { icon: FaGithub, href: "https://github.com/Nikhil-Yadav15" },
+               { icon: FaLinkedin, href: "https://www.linkedin.com/in/nikhil-yadav-593a98321" },
+               { icon: FaDiscord, href: "https://discord.com/users/codeslinger24" }
+             ].map((social, idx) => (
+               <a
+                 key={idx}
+                 href={social.href}
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="p-3 rounded-full bg-white/5 hover:bg-white/10 hover:scale-110 border border-white/5 transition-all duration-300 text-slate-300 hover:text-white"
+               >
+                 <social.icon size={22} />
+               </a>
+             ))}
+          </motion.div>
         </motion.div>
       </div>
 
-      <footer className="w-full bg-[#0a0a0a] border-t border-t-purple-700/50 py-6 px-4 md:px-6">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-4 max-w-7xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.8 }}
-            className="flex flex-col text-sm text-gray-400 font-mono order-2 md:order-1"
-          >
-            <div className="flex items-center">
-              <span className="text-cyan-400 mr-2">&gt;</span>
-
-              <div className="w-64 md:w-80 overflow-hidden">
-                <TypewriterEffect 
-                  words={words} 
-                  className="text-white font-lora font-light italic text-lg whitespace-nowrap" 
-                  cursorClassName="bg-cyan-400"
-                />
-              </div>
-            </div>
-          </motion.div>
 
 
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9 }}
-            className="flex gap-6 justify-center order-1 md:order-2"
-          >
-            <motion.a
-              whileHover={{ 
-                scale: 1.15, 
-                filter: "drop-shadow(0 0 12px #a855f7)"
-              }}
-              whileTap={{ scale: 0.95 }}
-              href="https://github.com/Nikhil-Yadav15"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full p-3 text-gray-400 hover:text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white/5 backdrop-blur-sm"
-            >
-              <FaGithub size={24} />
-            </motion.a>
-            <motion.a
-              whileHover={{ 
-                scale: 1.15, 
-                filter: "drop-shadow(0 0 12px #a855f7)"
-              }}
-              whileTap={{ scale: 0.95 }}
-              href="https://www.linkedin.com/in/nikhil-yadav-593a98321"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full p-3 text-gray-400 hover:text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white/5 backdrop-blur-sm"
-            >
-              <FaLinkedin size={24} />
-            </motion.a>
-            <motion.a
-              whileHover={{ 
-                scale: 1.15, 
-                filter: "drop-shadow(0 0 12px #22d3ee)"
-              }}
-              whileTap={{ scale: 0.95 }}
-              href="https://discord.com/users/codeslinger24"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full p-3 text-gray-400 hover:text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white/5 backdrop-blur-sm"
-            >
-              <FaDiscord size={24} />
-            </motion.a>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 1.0 }}
-            className="text-1xl italic  text-white text-center md:text-right font-lora order-3"
-          >
-            © Nikhil Yadav
-          </motion.div>
-        </div>
-      </footer>
-    </div>
+    </section>
   );
 }

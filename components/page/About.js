@@ -154,7 +154,7 @@ const About = () => {
                 <VideoText
                   src="/creator.mp4"
                   maintainAspectRatio={true}
-                  fontSize="7rem"
+                  fontSize="clamp(6rem, 8vw, 7rem)"
                 >
                   Creator
                 </VideoText>
@@ -163,7 +163,8 @@ const About = () => {
           </motion.div>
           
           <motion.div 
-            className="max-[350px]:w-[87dvw] max-[350px]:ml-[3rem] flex items-center justify-center"
+            // className="max-[350px]:w-[87dvw] max-[350px]:ml-[3rem] flex items-center justify-center"
+            className="w-full px-4 sm:px-6 md:px-8 flex items-center justify-center"
             variants={fadeInVariants}
           >
             <TextRevealCard

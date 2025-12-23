@@ -37,35 +37,39 @@ const VideoText = forwardRef(({
   
   const content = React.Children.toArray(children).join("");
 
+  // Measures text using a hidden DOM node so responsive font sizes (e.g., clamp) are respected.
   const measureText = (text, fontSize, fontWeight, fontFamily) => {
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
- 
-    const getFontSizeInPixels = (fontSize) => {
-      if (typeof fontSize === 'number') return fontSize;
-      if (typeof fontSize === 'string') {
-        if (fontSize.includes('rem')) {
-          return parseFloat(fontSize) * 16; 
-        } else if (fontSize.includes('em')) {
-          return parseFloat(fontSize) * 16; 
-        } else if (fontSize.includes('px')) {
-          return parseFloat(fontSize);
-        } else {
-          const match = fontSize.match(/^(\d*\.?\d+)/);
-          return match ? parseFloat(match[1]) * 16 : 48;
-        }
-      }
-      return 48;
-    };
+    if (typeof document === 'undefined') {
+      return { width: 0, height: 0, fontSizePx: 0, fontFamily, fontWeight };
+    }
 
-    const fontSizeInPx = getFontSizeInPixels(fontSize);
-    context.font = `${fontWeight} ${fontSizeInPx}px ${fontFamily}`;
-    
-    const metrics = context.measureText(text);
-    const width = metrics.width;
-    const height = fontSizeInPx * 0.85; 
-    
-    return { width, height };
+    const measureEl = document.createElement('span');
+    measureEl.textContent = text;
+    measureEl.style.position = 'absolute';
+    measureEl.style.visibility = 'hidden';
+    measureEl.style.whiteSpace = 'nowrap';
+    measureEl.style.fontSize = typeof fontSize === 'string' ? fontSize : `${fontSize}px`;
+    measureEl.style.fontWeight = fontWeight;
+    measureEl.style.fontFamily = fontFamily;
+    measureEl.style.lineHeight = '1';
+
+    document.body.appendChild(measureEl);
+
+    const rect = measureEl.getBoundingClientRect();
+    const computed = window.getComputedStyle(measureEl);
+    const fontSizePx = parseFloat(computed.fontSize) || 0;
+    const resolvedFontFamily = computed.fontFamily || fontFamily;
+    const resolvedFontWeight = computed.fontWeight || fontWeight;
+
+    document.body.removeChild(measureEl);
+
+    return {
+      width: rect.width,
+      height: rect.height || fontSizePx * 0.85,
+      fontSizePx,
+      fontFamily: resolvedFontFamily,
+      fontWeight: resolvedFontWeight,
+    };
   };
 
   useEffect(() => {
@@ -95,7 +99,7 @@ const VideoText = forwardRef(({
       return 48;
     };
 
-    const svgFontSize = getFontSizeForSVG(fontSize);
+    const svgFontSize = dimensions.fontSizePx;
 
     const newSvgMask = `<svg xmlns='http://www.w3.org/2000/svg' width='${svgWidth}' height='${svgHeight}' viewBox='0 0 ${svgWidth} ${svgHeight}'>
       <text x='50%' y='50%'
