@@ -97,10 +97,31 @@ export default function DarkNavbar({
 const DarkNavbarMobile = React.memo(function DarkNavbarMobile({ items, className, onResumeClick }) {
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const [shouldWobble, setShouldWobble] = useState(false);
 
   useScrollHide(setHidden);
 
-  const handleToggle = useCallback(() => setOpen(s => !s), []);
+  useEffect(() => {
+    const startWobble = () => {
+      setShouldWobble(true);
+      setTimeout(() => setShouldWobble(false), 600);
+    };
+
+    const initialTimer = setTimeout(startWobble, 3000);
+    const intervalId = setInterval(() => {
+      startWobble();
+    }, 5000);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(intervalId);
+    };
+  }, []);
+
+  const handleToggle = useCallback(() => {
+    setShouldWobble(false);
+    setOpen(s => !s);
+  }, []);
   const handleItemClick = useCallback((itemOnClick) => {
     setOpen(false);
     itemOnClick?.();
@@ -118,14 +139,22 @@ const DarkNavbarMobile = React.memo(function DarkNavbarMobile({ items, className
         transition={{ type: "spring", stiffness: 280, damping: 30 }}
         className="flex flex-col items-end gap-3"
       >
-        <button
+        <motion.button
           onClick={handleToggle}
           aria-expanded={open}
           aria-label="Open navigation"
           className="cursor-pointer flex h-12 w-12 items-center justify-center rounded-full bg-neutral-900 border border-neutral-700/50 shadow-lg backdrop-blur-md hover:bg-neutral-800/90 transition-colors"
+          animate={{
+            rotate: shouldWobble ? [0, -10, 10, -10, 10, 0] : 0
+          }}
+          transition={{
+            duration: 0.6,
+            ease: "easeInOut"
+          }}
+          style={{ willChange: shouldWobble ? 'transform' : 'auto' }}
         >
           <IconLayoutNavbarCollapse className="h-5 w-5 text-neutral-300" />
-        </button>
+        </motion.button>
 
         <AnimatePresence>
           {open && (
@@ -178,8 +207,26 @@ const DarkNavbarDesktop = React.memo(function DarkNavbarDesktop({
   const mouseX = useMotionValue(Infinity);
   const [hidden, setHidden] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [shouldWobble, setShouldWobble] = useState(false);
 
   useScrollHide(setHidden);
+
+  useEffect(() => {
+    const startWobble = () => {
+      setShouldWobble(true);
+      setTimeout(() => setShouldWobble(false), 600);
+    };
+
+    const initialTimer = setTimeout(startWobble, 3000);
+    const intervalId = setInterval(() => {
+      startWobble();
+    }, 5000);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(intervalId);
+    };
+  }, []);
 
   const handleMouseMove = useCallback((e) => {
     mouseX.set(e.pageX);
@@ -189,7 +236,10 @@ const DarkNavbarDesktop = React.memo(function DarkNavbarDesktop({
     mouseX.set(Infinity);
   }, [mouseX]);
 
-  const toggleCollapsed = useCallback(() => setCollapsed(s => !s), []);
+  const toggleCollapsed = useCallback(() => {
+    setShouldWobble(false);
+    setCollapsed(s => !s);
+  }, []);
 
   return (
     <motion.div
@@ -215,9 +265,14 @@ const DarkNavbarDesktop = React.memo(function DarkNavbarDesktop({
           <motion.div
             key="collapsed"
             initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1,
+              rotate: shouldWobble ? [0, -15, 15, -15, 15, 0] : 0
+            }}
             exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.5 }}
+            style={{ willChange: shouldWobble ? 'transform' : 'auto' }}
           >
             <button
               onClick={toggleCollapsed}
@@ -260,13 +315,21 @@ const DarkNavbarDesktop = React.memo(function DarkNavbarDesktop({
               </ShimmerButton>
             </div>
 
-            <button
+            <motion.button
               onClick={toggleCollapsed}
               className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-full bg-neutral-800/50 border border-neutral-700/30 hover:bg-neutral-700/60 transition-colors"
               aria-label="Collapse navigation"
+              animate={{
+                rotate: shouldWobble ? [0, -10, 10, -10, 10, 0] : 0
+              }}
+              transition={{
+                duration: 0.6,
+                ease: "easeInOut"
+              }}
+              style={{ willChange: shouldWobble ? 'transform' : 'auto' }}
             >
               <IconLayoutNavbarCollapse className="h-4 w-4 text-neutral-300" />
-            </button>
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>
