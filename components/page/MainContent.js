@@ -257,7 +257,11 @@ export default function SectionTransitions() {
       tl.kill();
       lenis.destroy();
       window.removeEventListener('resize', handleResize);
-      navItems.forEach((item, i) => item.removeEventListener('click', clickHandlers[i]));
+      navItems.forEach((item, i) => {
+        if (item && typeof item.removeEventListener === 'function') {
+          item.removeEventListener('click', clickHandlers[i]);
+        }
+      });
     };
   }, []);
 
