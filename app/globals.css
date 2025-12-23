@@ -9,7 +9,7 @@
   --animate-shimmer-slide: shimmer-slide var(--speed) ease-in-out infinite
     alternate;
   --animate-spin-around: spin-around calc(var(--speed) * 2) infinite linear;
-  --animate-background-position-spin: background-position-spin 3000ms infinite
+  --animate-background-position-spin: background-position-spin 4000ms infinite
     alternate;
   --animate-spotlight: spotlight 2s ease 0.75s 1 forwards;
   --color-background: var(--background);

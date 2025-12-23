@@ -85,7 +85,7 @@ export const TextRevealCard = ({
           className="absolute bg-gradient-to-bl from-slate-950 via-slate-950 to-black z-20 will-change-transform">
           <p
             className={cn(
-              "py-4 mx-2 sm:py-6 md:py-8 lg:py-10 font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-neutral-200",
+              "py-4 italic mx-2 sm:py-6 md:py-8 lg:py-10 font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-neutral-200",
               "whitespace-normal break-words sm:text-lg md:text-xl lg:text-2xl", 
               fontSize 
             )}>

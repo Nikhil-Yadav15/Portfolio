@@ -29,6 +29,10 @@ export const NeonSpotlightCard = ({
 }) => {
   const containerRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const rafRef = useRef(null);
+  const lastMousePos = useRef({ x: 0, y: 0 });
+  const resizeTimeoutRef = useRef(null);
+  const [hasHovered, setHasHovered] = useState(false);
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -43,8 +47,21 @@ export const NeonSpotlightCard = ({
     };
 
     updateDimensions();
-    window.addEventListener("resize", updateDimensions);
-    return () => window.removeEventListener("resize", updateDimensions);
+    
+    const debouncedResize = () => {
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
+      resizeTimeoutRef.current = setTimeout(updateDimensions, 300);
+    };
+    
+    window.addEventListener("resize", debouncedResize);
+    return () => {
+      window.removeEventListener("resize", debouncedResize);
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -56,12 +73,37 @@ export const NeonSpotlightCard = ({
 
   function handleMouseMove({ currentTarget, clientX, clientY }) {
     const { left, top } = currentTarget.getBoundingClientRect();
-    mouseX.set(clientX - left);
-    mouseY.set(clientY - top);
+    const newX = clientX - left;
+    const newY = clientY - top;
+    
+    // Throttle updates using RAF and threshold
+    const deltaX = Math.abs(newX - lastMousePos.current.x);
+    const deltaY = Math.abs(newY - lastMousePos.current.y);
+    
+    if (deltaX > 10 || deltaY > 10) {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+      
+      rafRef.current = requestAnimationFrame(() => {
+        mouseX.set(newX);
+        mouseY.set(newY);
+        lastMousePos.current = { x: newX, y: newY };
+      });
+    }
   }
 
-  const handleMouseEnter = () => setIsHovering(true);
-  const handleMouseLeave = () => setIsHovering(false);
+  const handleMouseEnter = () => {
+    setIsHovering(true);
+    if (!hasHovered) setHasHovered(true);
+  };
+  
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
+  };
 
   const styleVars = {
     "--border-size": `${borderSize}px`,
@@ -80,18 +122,20 @@ export const NeonSpotlightCard = ({
         ...styleVars,
         padding: "var(--border-size)",
         borderRadius: "var(--border-radius)",
+        willChange: isHovering ? 'transform' : 'auto',
       }}
       className={cn(
         "relative",
         "before:absolute before:inset-0 before:-z-20 before:content-['']",
         "before:rounded-[var(--border-radius)]",
         "before:bg-[linear-gradient(0deg,var(--neon-first-color),var(--neon-second-color))]",
-        "before:bg-[length:100%_200%] before:animate-background-position-spin",
+        "before:bg-[length:100%_200%]",
+        isHovering && "before:animate-background-position-spin",
         "after:absolute after:inset-0 after:-z-30 after:content-['']",
         "after:rounded-[var(--border-radius)]",
-        "after:blur-[var(--after-blur)]",
         "after:bg-[linear-gradient(0deg,var(--neon-first-color),var(--neon-second-color))]",
-        "after:bg-[length:100%_200%] after:opacity-80 after:animate-background-position-spin",
+        "after:bg-[length:100%_200%] after:opacity-60",
+        isHovering && "after:animate-background-position-spin",
         className
       )}
       onMouseMove={handleMouseMove}
@@ -127,9 +171,9 @@ export const NeonSpotlightCard = ({
             opacity: isHovering ? 0.95 : 0,
           }}
         >
-          {isHovering && (
+          {hasHovered && isHovering && (
             <CanvasRevealEffect
-              animationSpeed={5}
+              animationSpeed={3}
               containerClassName="bg-transparent absolute inset-0 pointer-events-none"
               colors={spotlight.canvasColors}
               dotSize={spotlight.dotSize}
