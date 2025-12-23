@@ -117,6 +117,16 @@ const defaultItemAnimationVariants = {
           filter: { duration: 0.3 },
         },
       },
+      exit: {
+        opacity: 0,
+        filter: "blur(10px)",
+        y: -20,
+        transition: {
+          y: { duration: 0.3 },
+          opacity: { duration: 0.4 },
+          filter: { duration: 0.3 },
+        },
+      },
     },
   },
   slideUp: {
@@ -253,29 +263,45 @@ const TextAnimateBase = ({
 }) => {
   const MotionComponent = motion.create(Component);
 
+  // Add safety checks for children
+  if (!children || typeof children !== 'string') {
+    console.warn('TextAnimate: children must be a non-empty string');
+    return null;
+  }
+
   let segments = [];
-  switch (by) {
-    case "word":
-      segments = children.split(/(\s+)/);
-      break;
-    case "character":
-      segments = children.split("");
-      break;
-    case "line":
-      segments = children.split("\n");
-      break;
-    case "smartWrap":
-      const words = children.split(/\s+/).filter(word => word.length > 0);
-      const lines = [];
-      for (let i = 0; i < words.length; i += maxWordsPerLine) {
-        lines.push(words.slice(i, i + maxWordsPerLine).join(" "));
-      }
-      segments = lines;
-      break;
-    case "text":
-    default:
+  try {
+    switch (by) {
+      case "word":
+        segments = children.split(/(\s+)/);
+        break;
+      case "character":
+        segments = children.split("");
+        break;
+      case "line":
+        segments = children.split("\n");
+        break;
+      case "smartWrap":
+        const words = children.split(/\s+/).filter(word => word.length > 0);
+        const lines = [];
+        for (let i = 0; i < words.length; i += maxWordsPerLine) {
+          lines.push(words.slice(i, i + maxWordsPerLine).join(" "));
+        }
+        segments = lines;
+        break;
+      case "text":
+      default:
+        segments = [children];
+        break;
+    }
+    
+    // Ensure we have at least one segment
+    if (segments.length === 0) {
       segments = [children];
-      break;
+    }
+  } catch (error) {
+    console.error('TextAnimate: Error splitting children:', error);
+    segments = [children];
   }
 
   const finalVariants = variants
@@ -287,20 +313,20 @@ const TextAnimateBase = ({
             transition: {
               opacity: { duration: 0.01, delay },
               delayChildren: delay,
-              staggerChildren: duration / segments.length,
+              staggerChildren: segments.length > 0 ? duration / segments.length : duration,
             },
           },
           exit: {
             opacity: 0,
             transition: {
-              staggerChildren: duration / segments.length,
+              staggerChildren: segments.length > 0 ? duration / segments.length : duration,
               staggerDirection: -1,
             },
           },
         },
         item: variants,
       }
-    : animation
+    : animation && defaultItemAnimationVariants[animation]
       ? {
           container: {
             ...defaultItemAnimationVariants[animation].container,
@@ -311,21 +337,30 @@ const TextAnimateBase = ({
                 staggerChildren: staggerTimings[by] || 0.05,
               },
             },
-            exit: {
-              ...defaultItemAnimationVariants[animation].container.exit,
-              transition: {
-                staggerChildren: staggerTimings[by] || 0.05,
-                staggerDirection: -1,
-              },
-            },
+            exit: defaultItemAnimationVariants[animation].container.exit
+              ? {
+                  ...defaultItemAnimationVariants[animation].container.exit,
+                  transition: {
+                    staggerChildren: staggerTimings[by] || 0.05,
+                    staggerDirection: -1,
+                  },
+                }
+              : {
+                  opacity: 0,
+                  transition: {
+                    staggerChildren: staggerTimings[by] || 0.05,
+                    staggerDirection: -1,
+                  },
+                },
           },
           item: defaultItemAnimationVariants[animation].item,
         }
       : { container: defaultContainerVariants, item: defaultItemVariants };
 
   return (
-    <AnimatePresence mode="popLayout">
+    <AnimatePresence mode="popLayout" key={`${animation}-${by}-${children.substring(0, 20)}`}>
       <MotionComponent
+        key={children}
         variants={finalVariants.container}
         initial="hidden"
         whileInView={startOnView ? "show" : undefined}
@@ -339,7 +374,7 @@ const TextAnimateBase = ({
         {accessible && <span className="sr-only">{children}</span>}
         {segments.map((segment, i) => (
           <motion.span
-            key={`${by}-${segment}-${i}`}
+            key={`${by}-${i}-${segment}`}
             variants={finalVariants.item}
             custom={i * (staggerTimings[by] || 0.05)}
             className={cn(
