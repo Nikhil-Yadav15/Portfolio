@@ -204,15 +204,18 @@ const DarkNavbarDesktop = React.memo(function DarkNavbarDesktop({
   logoClick,
   onResumeClick
 }) {
+  const { currentSection } = useNav();
   const mouseX = useMotionValue(Infinity);
   const [hidden, setHidden] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(currentSection !== 'hero');
   const [shouldWobble, setShouldWobble] = useState(false);
 
   useScrollHide(setHidden);
 
-  useEffect(() => {
-    const startWobble = () => {
+  useEffect(() => {    setCollapsed(currentSection !== 'hero');
+  }, [currentSection]);
+
+  useEffect(() => {    const startWobble = () => {
       setShouldWobble(true);
       setTimeout(() => setShouldWobble(false), 600);
     };
