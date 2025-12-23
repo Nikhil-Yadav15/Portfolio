@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useState, Suspense } from "react";
-import { TextAnimate } from "@/components/ui/text-animate";
 import DecryptedText from '@/components/ui/DecryptedText';
 import { VideoText } from '@/components/ui/VideoTextMask';
 import {TextRevealCard} from "@/components/ui/text-reveal-card";
@@ -11,6 +10,47 @@ import ScrambledText from '@/components/ui/ScrambledText';
 // const LazySpline = lazy(() => import('@splinetool/react-spline'));
 import Spline from '@splinetool/react-spline';
 
+// Custom component for character-by-character blur animation without re-render
+const BlurInText = ({ children, className, delay = 0 }) => {
+  const characters = children.split('');
+  
+  const characterVariants = {
+    hidden: { 
+      opacity: 0, 
+      filter: "blur(10px)", 
+      y: 20 
+    },
+    visible: (i) => ({
+      opacity: 1,
+      filter: "blur(0px)",
+      y: 0,
+      transition: {
+        delay: delay + i * 0.03,
+        duration: 0.3,
+        ease: "easeOut"
+      }
+    })
+  };
+
+  return (
+    <span className={className}>
+      {characters.map((char, i) => (
+        <motion.span
+          key={`${char}-${i}`}
+          custom={i}
+          variants={characterVariants}
+          initial="hidden"
+          animate="visible"
+          className="inline-block whitespace-pre"
+          style={{ display: 'inline-block' }}
+        >
+          {char}
+        </motion.span>
+      ))}
+    </span>
+  );
+};
+
 const fadeInVariants = {
   hidden: { 
     opacity: 0, 
@@ -20,7 +60,7 @@ const fadeInVariants = {
     opacity: 1, 
     y: 0,
     transition: {
-      duration: 0.6, 
+      duration: 0.8, 
       delay: 1,
       ease: "easeOut",
       type: "tween" 
@@ -67,14 +107,14 @@ const About = () => {
           initial="hidden"
           animate={isVisible ? "visible" : "hidden"}
         >
-          <motion.div variants={fadeInVariants}>
-            <TextAnimate animation="blurInUp"  delay={1} className={"cursor-text font-lora text-6xl md:text-7xl lg:text-8xl font-bold flex justify-center text-blue-100"} by="character">  About Me</TextAnimate>
-          </motion.div>
+          <motion.h2 variants={fadeInVariants} className="cursor-text font-lora text-6xl md:text-7xl lg:text-8xl font-bold flex justify-center text-blue-100">
+            <BlurInText delay={1.5}>About Me</BlurInText>
+          </motion.h2>
 
           <motion.div className="space-y-4" variants={fadeInVariants}>
-            <motion.div variants={fadeInVariants}>
-              <TextAnimate animation="blurInUp"  delay={1} className={"cursor-text font-lora text-2xl md:text-3xl text-purple-200 font-light flex justify-center"} by="character">  I am</TextAnimate>
-            </motion.div>
+            <motion.p variants={fadeInVariants} className="cursor-text font-lora text-2xl md:text-3xl text-purple-200 font-light flex justify-center">
+              <BlurInText delay={1.7}>I am</BlurInText>
+            </motion.p>
             
             <div className="space-y-3">
               <motion.div 
