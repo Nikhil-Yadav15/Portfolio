@@ -278,7 +278,7 @@ export default function GlassBreakPage() {
 
         // Load models 
         setPreloadStage('models');
-        const modelAssets = PORTFOLIO_ASSETS.MODELS.filter(model => {
+        const modelAssets = PORTFOLIO_ASSETS().MODELS.filter(model => {
           const validModels = ['/blackhole_compress.glb'];
           return validModels.includes(model.src);
         });
@@ -293,11 +293,12 @@ export default function GlassBreakPage() {
 
         // Stage 3: Load remaining assets
         setPreloadStage('remaining-assets');
+        const portfolioAssets = PORTFOLIO_ASSETS();
         const remainingAssets = [
-          ...PORTFOLIO_ASSETS.TECH_SVGS,
-          ...PORTFOLIO_ASSETS.PROJECT_GIFS,
-          ...PORTFOLIO_ASSETS.PROJECT_PNGS,
-          ...PORTFOLIO_ASSETS.AUDIO,
+          ...portfolioAssets.TECH_SVGS,
+          ...portfolioAssets.PROJECT_GIFS,
+          ...portfolioAssets.PROJECT_PNGS,
+          ...portfolioAssets.AUDIO,
         ];
         
         await preloadAssets(remainingAssets, (progress) => {
