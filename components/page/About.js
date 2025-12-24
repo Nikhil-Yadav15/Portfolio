@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useRef, useCallback } from "react";
 import DecryptedText from '@/components/ui/DecryptedText';
 import { VideoText } from '@/components/ui/VideoTextMask';
 import {TextRevealCard} from "@/components/ui/text-reveal-card";
@@ -9,6 +9,101 @@ import ScrambledText from '@/components/ui/ScrambledText';
 
 // const LazySpline = lazy(() => import('@splinetool/react-spline'));
 import Spline from '@splinetool/react-spline';
+
+// Modern 3D Model Loading Skeleton with Ripple Effect
+const SplineLoadingSkeleton = () => {
+  const containerRef = useRef(null);
+  const [ripples, setRipples] = useState([]);
+  const rippleIdRef = useRef(0);
+  const lastRippleTime = useRef(0);
+
+  // Trigger ripple on mouse move (throttled)
+  const handleMouseMove = useCallback((e) => {
+    const now = Date.now();
+    if (now - lastRippleTime.current < 400) return; // Throttle to every 400ms
+    
+    lastRippleTime.current = now;
+    const rippleId = rippleIdRef.current++;
+    setRipples(prev => [...prev, rippleId]);
+    
+    // Auto-remove ripple after animation
+    setTimeout(() => {
+      setRipples(prev => prev.filter(id => id !== rippleId));
+    }, 1000);
+  }, []);
+
+  return (
+    <div 
+      ref={containerRef}
+      className="w-full h-full min-h-[50dvh] lg:min-h-[100dvh] flex items-center justify-center relative overflow-hidden cursor-default"
+      onMouseMove={handleMouseMove}
+    >
+      {/* Large pulsing glow */}
+      <motion.div 
+        className="absolute w-[25dvw] h-[25dvw] rounded-full bg-purple-500/10 blur-[8dvw]"
+        animate={{ 
+          scale: [1, 1.4, 1],
+          opacity: [0.2, 0.5, 0.2]
+        }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+      />
+      
+      {/* Loader container */}
+      <div className="relative flex flex-col items-center gap-6">
+        <div className="relative w-[8dvw] h-[8dvw] min-w-[60px] min-h-[60px] max-w-[120px] max-h-[120px]">
+          {/* Water ripple effects */}
+          {ripples.map((id) => (
+            <motion.div
+              key={id}
+              className="absolute inset-0 rounded-full border-2 border-purple-400/60"
+              initial={{ scale: 1, opacity: 0.7 }}
+              animate={{ scale: 8, opacity: 0 }}
+              transition={{ duration: 1.2, ease: "easeOut" }}
+            />
+          ))}
+          
+          {/* Outer rotating ring */}
+          <motion.div
+            className="absolute inset-0 rounded-full border-2 border-transparent border-t-purple-500/60 border-r-purple-500/30"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+          />
+          
+          {/* Inner counter-rotating ring */}
+          <motion.div
+            className="absolute inset-[12%] rounded-full border-2 border-transparent border-b-blue-400/50 border-l-blue-400/30"
+            animate={{ rotate: -360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          />
+          
+          {/* Pulsing center orb */}
+          <motion.div
+            className="absolute inset-[25%] rounded-full bg-gradient-to-br from-purple-500/30 to-blue-500/30"
+            animate={{ 
+              scale: [0.8, 1.2, 0.8],
+              opacity: [0.4, 0.9, 0.4]
+            }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </div>
+        
+        {/* Floating loading text */}
+        <motion.p
+          className="text-neutral-400 font-lora italic text-sm"
+          animate={{ y: [0, -6, 0] }}
+          transition={{ 
+            repeat: Infinity, 
+            duration: 2, 
+            ease: 'easeInOut',
+            repeatType: 'reverse'
+          }}
+        >
+          Loading...
+        </motion.p>
+      </div>
+    </div>
+  );
+};
 
 // Custom component for character-by-character blur animation without re-render
 const BlurInText = ({ children, className, delay = 0 }) => {
@@ -178,8 +273,7 @@ const About = () => {
 
       {!isMobile && (
         <div className="w-full lg:w-[45dvw] flex items-start justify-center relative overflow-hidden min-h-[50vh] hide-spline-watermark lg:min-h-screen">
-          <Suspense fallback={<div>Loading 3D model...</div>}>
-            {/* <LazySpline scene="https://prod.spline.design/.../scene.splinecode" /> */}
+          <Suspense fallback={<SplineLoadingSkeleton />}>
             <Spline scene="https://prod.spline.design/WCl3Q-TO45nDydSB/scene.splinecode" />
           </Suspense>
         </div>
