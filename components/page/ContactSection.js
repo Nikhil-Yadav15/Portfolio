@@ -128,7 +128,7 @@ const StarBackground = () => {
 };
 
 // --- Component: Premium Input Field ---
-const InputGroup = ({ label, id, error, children }) => {
+const InputGroup = ({ label, id, error, children, hasValue = false }) => {
   return (
     <div className="space-y-2 relative">
       <label
@@ -137,9 +137,12 @@ const InputGroup = ({ label, id, error, children }) => {
       >
         {label}
       </label>
-      <div className="relative group">
+      <div className="relative">
         {children}
-        <div className="absolute bottom-0 left-0 h-[1px] w-0 bg-gradient-to-r from-purple-400 to-pink-400 transition-all duration-500 group-focus-within:w-full" />
+        <div className={cn(
+          "absolute bottom-0 left-0 h-[1px] bg-gradient-to-r from-purple-400 to-pink-400 transition-all duration-500",
+          hasValue ? "w-full" : "w-0 peer-focus:w-full"
+        )} />
       </div>
       <AnimatePresence>
         {error && (
@@ -187,9 +190,13 @@ export default function ContactSection() {
     handleSubmit,
     formState: { errors, isSubmitting, isSubmitSuccessful },
     reset,
+    watch,
   } = useForm({
     resolver: zodResolver(schema),
   });
+
+  // Watch field values to check if they have content
+  const watchedFields = watch();
 
   const [serverState, setServerState] = useState(null);
 
@@ -210,7 +217,7 @@ export default function ContactSection() {
   };
 
   const inputClasses =
-    "w-full bg-slate-950/30 border border-white/5 rounded-lg px-4 py-3.5 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:bg-slate-900/50 transition-all duration-300 hover:border-white/10";
+    "peer w-full bg-slate-950/30 border border-white/5 rounded-lg px-4 py-3.5 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:bg-slate-900/50 transition-all duration-300 hover:border-white/10";
 
   return (
     // Changed min-h-screen to min-h-[100dvh] for mobile browsers
@@ -288,7 +295,7 @@ export default function ContactSection() {
               {/* Form Content */}
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 md:space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
-                  <InputGroup label="Name" id="name" error={errors.name}>
+                  <InputGroup label="Name" id="name" error={errors.name} hasValue={!!watchedFields.name}>
                     <input
                       {...register("name")}
                       id="name"
@@ -296,7 +303,7 @@ export default function ContactSection() {
                       placeholder="John Doe"
                     />
                   </InputGroup>
-                  <InputGroup label="Email" id="email" error={errors.email}>
+                  <InputGroup label="Email" id="email" error={errors.email} hasValue={!!watchedFields.email}>
                     <input
                       {...register("email")}
                       id="email"
@@ -306,7 +313,7 @@ export default function ContactSection() {
                   </InputGroup>
                 </div>
 
-                <InputGroup label="Subject" id="subject" error={errors.subject}>
+                <InputGroup label="Subject" id="subject" error={errors.subject} hasValue={!!watchedFields.subject}>
                   <input
                     {...register("subject")}
                     id="subject"
@@ -315,7 +322,7 @@ export default function ContactSection() {
                   />
                 </InputGroup>
 
-                <InputGroup label="Message" id="message" error={errors.message}>
+                <InputGroup label="Message" id="message" error={errors.message} hasValue={!!watchedFields.message}>
                   <textarea
                     {...register("message")}
                     id="message"
@@ -329,7 +336,7 @@ export default function ContactSection() {
                     <ShinyButton
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full font-lora"
+                      className="w-full cursor-pointer font-lora"
                     >
                       {isSubmitting ? (
                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
