@@ -20,6 +20,9 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger, useGSAP);
 }
 
+// Asset cache version - increment when assets change
+const ASSET_CACHE_VERSION = 'v1.1.0';
+
 useGLTF.preload('/blackhole_compress.glb');
 
 export default function GlassBreakPage() {
@@ -253,7 +256,7 @@ export default function GlassBreakPage() {
   useEffect(() => {
     if (!isHydrated) return;
     
-    const assetsAlreadyLoaded = localStorage.getItem('assetspreloaded') === 'true';
+    const assetsAlreadyLoaded = localStorage.getItem(`assetspreloaded_${ASSET_CACHE_VERSION}`) === 'true';
     
     if (assetsAlreadyLoaded) {
       setSceneState(prev => ({ 
@@ -276,11 +279,12 @@ export default function GlassBreakPage() {
           setAssetLoadingProgress(progress * 0.3); // 30% 
         });
 
-        // Load models 
+        // Load models (skip blackhole - already preloaded via useGLTF.preload)
         setPreloadStage('models');
         const modelAssets = PORTFOLIO_ASSETS().MODELS.filter(model => {
-          const validModels = ['/blackhole_compress.glb'];
-          return validModels.includes(model.src);
+          // Skip blackhole_compress.glb - already preloaded at module level via useGLTF.preload()
+          const skipModels = ['/blackhole_compress.glb'];
+          return !skipModels.includes(model.src);
         });
         
         if (modelAssets.length > 0) {
@@ -305,7 +309,7 @@ export default function GlassBreakPage() {
           setAssetLoadingProgress(50 + (progress * 0.5)); // 50% 
         });
 
-        localStorage.setItem('assetspreloaded', 'true');
+        localStorage.setItem(`assetspreloaded_${ASSET_CACHE_VERSION}`, 'true');
         
         setSceneState(prev => ({ 
           ...prev, 
