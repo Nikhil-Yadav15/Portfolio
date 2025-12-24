@@ -265,6 +265,17 @@ export default function SectionTransitions() {
 
     setupSectionScrolling();
     const handleResize = () => {
+      // Don't refresh when an input is focused (keyboard appearing on mobile)
+      const activeElement = document.activeElement;
+      const isInputFocused = activeElement && 
+        (activeElement.tagName === 'INPUT' || 
+         activeElement.tagName === 'TEXTAREA' || 
+         activeElement.tagName === 'SELECT');
+      
+      if (isInputFocused) {
+        return; // Skip refresh when keyboard is likely open
+      }
+      
       ScrollTrigger.refresh();
       lenis.resize();
     };
