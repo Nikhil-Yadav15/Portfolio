@@ -317,8 +317,8 @@ function makeVertexArray(gl, bufLocNumElmPairs, indices) {
   return va;
 }
 
-function resizeCanvasToDisplaySize(canvas, devicePixelRatio = 1) {
-  const dpr = devicePixelRatio;
+function resizeCanvasToDisplaySize(canvas) {
+  const dpr = Math.min(2, window.devicePixelRatio);
   const displayWidth = Math.round(canvas.clientWidth * dpr);
   const displayHeight = Math.round(canvas.clientHeight * dpr);
   const needResize = canvas.width !== displayWidth || canvas.height !== displayHeight;
@@ -383,17 +383,6 @@ class ArcballControl {
         vec2.set(this.pointerPos, e.clientX, e.clientY);
       }
     });
-
-    // Prevent touch scrolling on mobile
-    canvas.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    }, { passive: false });
-    
-    canvas.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    }, { passive: false });
 
     canvas.style.touchAction = 'none';
   }
@@ -504,13 +493,6 @@ class InfiniteGridMenu {
   #deltaTime = 0;
   #deltaFrames = 0;
   #frames = 0;
-  #isDirty = true;
-  #isIdle = false;
-  #idleFrames = 0;
-  #performanceMode = 'auto';
-  #devicePixelRatio = 1;
-  #animationFrameId = null;
-  #disposed = false;
 
   camera = {
     matrix: mat4.create(),
@@ -531,38 +513,13 @@ class InfiniteGridMenu {
   smoothRotationVelocity = 0;
   scaleFactor = 1.0;
   movementActive = false;
-  
-  // Cached computations
-  cachedTransformedPositions = null;
-  cachedOrientation = null;
-  lastNearestVertexIndex = null;
-  matrixPool = [];
 
   constructor(canvas, items, onActiveItemChange, onMovementChange, onInit = null) {
     this.canvas = canvas;
     this.items = items || [];
     this.onActiveItemChange = onActiveItemChange || (() => { });
     this.onMovementChange = onMovementChange || (() => { });
-    this.#detectDevicePerformance();
     this.#init(onInit);
-  }
-
-  #detectDevicePerformance() {
-    // Detect device capability for adaptive quality
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const cores = navigator.hardwareConcurrency || 4;
-    const memory = navigator.deviceMemory || 4;
-    
-    if (isMobile || cores < 4 || memory < 4) {
-      this.#performanceMode = 'low';
-      this.#devicePixelRatio = Math.min(1.5, window.devicePixelRatio);
-    } else if (cores >= 8 && memory >= 8) {
-      this.#performanceMode = 'high';
-      this.#devicePixelRatio = Math.min(2, window.devicePixelRatio);
-    } else {
-      this.#performanceMode = 'medium';
-      this.#devicePixelRatio = Math.min(1.75, window.devicePixelRatio);
-    }
   }
 
   resize() {
@@ -573,44 +530,24 @@ class InfiniteGridMenu {
     );
 
     const gl = this.gl;
-    const needsResize = resizeCanvasToDisplaySize(gl.canvas, this.#devicePixelRatio);
+    const needsResize = resizeCanvasToDisplaySize(gl.canvas);
     if (needsResize) {
       gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-      this.#isDirty = true;
     }
 
     this.#updateProjectionMatrix(gl);
   }
 
   run(time = 0) {
-    if (this.#disposed) return;
-    
     this.#deltaTime = Math.min(32, time - this.#time);
     this.#time = time;
     this.#deltaFrames = this.#deltaTime / this.TARGET_FRAME_DURATION;
     this.#frames += this.#deltaFrames;
 
     this.#animate(this.#deltaTime);
-    
-    // Only render if something changed or not idle
-    if (this.#isDirty || !this.#isIdle) {
-      this.#render();
-      this.#isDirty = false;
-    }
-    
-    // Check for idle state
-    if (this.control && Math.abs(this.smoothRotationVelocity) < 0.001 && !this.control.isPointerDown) {
-      this.#idleFrames++;
-      if (this.#idleFrames > 120) { // 2 seconds at 60fps
-        this.#isIdle = true;
-      }
-    } else {
-      this.#idleFrames = 0;
-      this.#isIdle = false;
-      this.#isDirty = true;
-    }
+    this.#render();
 
-    this.#animationFrameId = requestAnimationFrame((t) => this.run(t));
+    requestAnimationFrame((t) => this.run(t));
   }
 
   #init(onInit) {
@@ -683,7 +620,7 @@ class InfiniteGridMenu {
     this.atlasSize = Math.ceil(Math.sqrt(itemCount));
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    const cellSize = this.#performanceMode === 'low' ? 128 : 256;
+    const cellSize = 512;
 
     canvas.width = this.atlasSize * cellSize;
     canvas.height = this.atlasSize * cellSize;
@@ -743,69 +680,31 @@ class InfiniteGridMenu {
   }
 
   #animate(deltaTime) {
-    if (!this.control || this.#disposed) return;
-    
     const gl = this.gl;
-    const previousVelocity = this.smoothRotationVelocity;
     this.control.update(deltaTime, this.TARGET_FRAME_DURATION);
 
-    // Check if orientation changed significantly
-    const orientationChanged = !this.cachedOrientation || 
-      !quat.equals(this.cachedOrientation, this.control.orientation);
+    let positions = this.instancePositions.map((p) => vec3.transformQuat(vec3.create(), p, this.control.orientation));
+    const scale = 0.3;
+    const SCALE_INTENSITY = 0.6;
+    positions.forEach((p, ndx) => {
+      // !
+      const s = (Math.abs(p[2]) / this.SPHERE_RADIUS) * SCALE_INTENSITY + (1 - SCALE_INTENSITY);
+      const finalScale = s * scale;
 
-    if (orientationChanged || Math.abs(this.smoothRotationVelocity) > 0.001) {
-      // Cache or reuse transformed positions
-      if (!this.cachedTransformedPositions || orientationChanged) {
-        if (!this.cachedTransformedPositions) {
-          this.cachedTransformedPositions = new Array(this.instancePositions.length);
-          for (let i = 0; i < this.instancePositions.length; i++) {
-            this.cachedTransformedPositions[i] = vec3.create();
-          }
-        }
-        
-        for (let i = 0; i < this.instancePositions.length; i++) {
-          vec3.transformQuat(this.cachedTransformedPositions[i], this.instancePositions[i], this.control.orientation);
-        }
-        
-        this.cachedOrientation = quat.clone(this.control.orientation);
-      }
-
-      const positions = this.cachedTransformedPositions;
-      const scale = 0.3;
-      const SCALE_INTENSITY = 0.6;
       
-      // Reuse temp vectors
-      const tempVec = vec3.create();
-      const tempScale = vec3.create();
-      
-      for (let ndx = 0; ndx < positions.length; ndx++) {
-        const p = positions[ndx];
-        const s = (Math.abs(p[2]) / this.SPHERE_RADIUS) * SCALE_INTENSITY + (1 - SCALE_INTENSITY);
-        const finalScale = s * scale;
+      // !
+      const matrix = mat4.create();
+      mat4.multiply(matrix, matrix, mat4.fromTranslation(mat4.create(), vec3.negate(vec3.create(), p)));
+      mat4.multiply(matrix, matrix, mat4.targetTo(mat4.create(), [0, 0, 0], p, [0, 1, 0]));
+      mat4.multiply(matrix, matrix, mat4.fromScaling(mat4.create(), [finalScale, finalScale, finalScale]));
+      mat4.multiply(matrix, matrix, mat4.fromTranslation(mat4.create(), [0, 0, -this.SPHERE_RADIUS]));
 
-        // Reuse or create matrix
-        const matrix = this.discInstances.matrices[ndx];
-        mat4.identity(matrix);
-        
-        vec3.negate(tempVec, p);
-        mat4.translate(matrix, matrix, tempVec);
-        
-        const lookAtMat = mat4.create();
-        mat4.targetTo(lookAtMat, [0, 0, 0], p, [0, 1, 0]);
-        mat4.multiply(matrix, matrix, lookAtMat);
-        
-        vec3.set(tempScale, finalScale, finalScale, finalScale);
-        mat4.scale(matrix, matrix, tempScale);
-        
-        mat4.translate(matrix, matrix, [0, 0, -this.SPHERE_RADIUS]);
-      }
+      mat4.copy(this.discInstances.matrices[ndx], matrix);
+    });
 
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.discInstances.buffer);
-      gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.discInstances.matricesArray);
-      gl.bindBuffer(gl.ARRAY_BUFFER, null);
-      
-      this.#isDirty = true;
-    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.discInstances.buffer);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.discInstances.matricesArray);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
     this.smoothRotationVelocity = this.control.rotationVelocity;
   }
@@ -884,7 +783,6 @@ class InfiniteGridMenu {
     if (isMoving !== this.movementActive) {
       this.movementActive = isMoving;
       this.onMovementChange(isMoving);
-      this.#isDirty = true;
     }
 
     if (!this.control.isPointerDown) {
@@ -904,11 +802,6 @@ class InfiniteGridMenu {
   }
 
   #findNearestVertexIndex() {
-    // Cache result if orientation hasn't changed much
-    if (this.lastNearestVertexIndex !== null && this.#isIdle) {
-      return this.lastNearestVertexIndex;
-    }
-    
     const n = this.control.snapDirection;
     const inversOrientation = quat.conjugate(quat.create(), this.control.orientation);
     const nt = vec3.transformQuat(vec3.create(), n, inversOrientation);
@@ -922,39 +815,12 @@ class InfiniteGridMenu {
         nearestVertexIndex = i;
       }
     }
-    
-    this.lastNearestVertexIndex = nearestVertexIndex;
     return nearestVertexIndex;
   }
 
   #getVertexWorldPosition(index) {
     const nearestVertexPos = this.instancePositions[index];
     return vec3.transformQuat(vec3.create(), nearestVertexPos, this.control.orientation);
-  }
-
-  dispose() {
-    this.#disposed = true;
-    
-    // Cancel animation frame
-    if (this.#animationFrameId) {
-      cancelAnimationFrame(this.#animationFrameId);
-      this.#animationFrameId = null;
-    }
-    
-    // Clean up WebGL resources
-    const gl = this.gl;
-    if (gl) {
-      if (this.tex) gl.deleteTexture(this.tex);
-      if (this.discVAO) gl.deleteVertexArray(this.discVAO);
-      if (this.discProgram) gl.deleteProgram(this.discProgram);
-      if (this.discInstances?.buffer) gl.deleteBuffer(this.discInstances.buffer);
-    }
-    
-    // Clear references
-    this.cachedTransformedPositions = null;
-    this.cachedOrientation = null;
-    this.matrixPool = null;
-    this.control = null;
   }
 }
 
@@ -1002,9 +868,6 @@ export default function InfiniteMenu({ items = [] }) {
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      if (sketch) {
-        sketch.dispose();
-      }
     };
   }, [items]);
 

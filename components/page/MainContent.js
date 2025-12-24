@@ -41,8 +41,15 @@ export default function SectionTransitions() {
 
     if (!container || slides.length === 0) return;
 
+    // ! Responsive scroll settings - all in one place
+    const isMobile = window.innerWidth < 768;
+    const scrollDuration = isMobile ? 0.4 : 0.25;
+    const sectionDuration = isMobile ? 0.8 : 0.6;
+    const scrubValue = isMobile ? 0.4 : 0.25;
+
     const lenis = new Lenis({
-      duration: 1.2,
+      // !
+      duration: scrollDuration,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       direction: 'vertical',
       gestureDirection: 'vertical',
@@ -69,25 +76,42 @@ export default function SectionTransitions() {
 
     const tl = gsap.timeline();
     const clickHandlers = [];
-    gsap.set(slides, { xPercent: 100, opacity: 0, scale: 0.8, zIndex: (i) => i });
-
-    const sectionDuration = 1; 
+    gsap.set(slides, { opacity: 0, zIndex: (i) => i, pointerEvents: 'none' });
+    gsap.set(slides[0], { pointerEvents: 'auto' }); // First section active
+    
     const totalDuration = (slides.length - 1) * sectionDuration;
+    
     const st = ScrollTrigger.create({
       animation: tl,
       trigger: container,
       start: 'top top',
       end: `+=${window.innerHeight * totalDuration}`, 
       pin: true,
-      scrub: 1,
+      // !
+      scrub: scrubValue,
       snap: {
         snapTo: (progress) => {
           const sectionIndex = Math.round(progress * (slides.length - 1));
 
           return sectionIndex / (slides.length - 1);
         },
-        duration: { min: 0.2, max: 0.6 },
-        delay: 0.1,
+        duration: { min: 0, max: 0.5 },
+        delay: 0,
+        ease: 'power2.in',
+      },
+      onUpdate: (self) => {
+        // Calculate which section is currently active based on scroll progress
+        const progress = self.progress;
+        const currentIndex = Math.round(progress * (slides.length - 1));
+        
+        // Update pointer-events: only active section can receive events
+        slides.forEach((slide, i) => {
+          if (i === currentIndex) {
+            gsap.set(slide, { pointerEvents: 'auto' });
+          } else {
+            gsap.set(slide, { pointerEvents: 'none' });
+          }
+        });
       },
     });
 
@@ -205,7 +229,7 @@ export default function SectionTransitions() {
 
       if (i === 0) {
         gsap.set(item, { backgroundColor: '#ed3c3c', boxShadow: '0 0 16px #ed3c3c' });
-        gsap.set(slides[0], { xPercent: 0, opacity: 1, scale: 1, zIndex: slides.length });
+        gsap.set(slides[0], { opacity: 1, zIndex: slides.length });
         tl.addLabel('section-1', 0);
       } else {
         const startTime = (i - 1) * sectionDuration;
@@ -218,14 +242,11 @@ export default function SectionTransitions() {
             duration: 0.3
           }, startTime)
           .to(slides[i], { 
-            xPercent: 0, 
             opacity: 1, 
-            scale: 1, 
-            zIndex: slides.length - i + 1, 
-            boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+            zIndex: slides.length - i + 1,
             ease: 'power2.inOut',
             duration: 0.8
-          }, startTime + 0.1)
+          }, startTime)
           .to(prevItem, { 
             backgroundColor: '#424b58', 
             boxShadow: 'none', 
@@ -233,11 +254,8 @@ export default function SectionTransitions() {
             duration: 0.3
           }, startTime)
           .to(prevSlide, { 
-            xPercent: -100, 
             opacity: 0, 
-            scale: 0.8, 
-            zIndex: i - 1, 
-            boxShadow: 'none',
+            zIndex: i - 1,
             ease: 'power2.inOut',
             duration: 0.8
           }, startTime)
@@ -247,6 +265,17 @@ export default function SectionTransitions() {
 
     setupSectionScrolling();
     const handleResize = () => {
+      // Don't refresh when an input is focused (keyboard appearing on mobile)
+      const activeElement = document.activeElement;
+      const isInputFocused = activeElement && 
+        (activeElement.tagName === 'INPUT' || 
+         activeElement.tagName === 'TEXTAREA' || 
+         activeElement.tagName === 'SELECT');
+      
+      if (isInputFocused) {
+        return; // Skip refresh when keyboard is likely open
+      }
+      
       ScrollTrigger.refresh();
       lenis.resize();
     };
@@ -348,7 +377,6 @@ export default function SectionTransitions() {
           ref={(el) => (sectionsRef.current[i] = el)}
           className={`absolute w-[100dvw] h-full ${i >= 2 ? 'overflow-y-auto' : 'overflow-y-hidden'}`}
           style={{
-            pointerEvents: 'auto',
             WebkitOverflowScrolling: i >= 2 ? 'touch' : 'auto',
           }}
         >
